@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "RWNOBy7WsK2bw3IDo/aRbDu8Who+8xlE1wsPaoALGfsyigoz3EflbOx3Z0+dMD4c5YlyVMhfxRo4ECVephGNPA==",
+  "success": true,
+  "projectFilePath": "/home/nemo/earthfusion-backend/earthfusion-backend.csproj",
+  "expectedPackageFiles": [
+    "/home/nemo/.nuget/packages/oracle.manageddataaccess.core/2.19.70/oracle.manageddataaccess.core.2.19.70.nupkg.sha512"
+  ],
+  "logs": []
+}
