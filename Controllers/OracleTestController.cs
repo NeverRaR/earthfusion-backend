@@ -58,6 +58,7 @@ namespace OracleTest.Controllers
             httpResponse.Date = DateTime.Now;
             Console.WriteLine(httpResponse.Date);
             List<string> result;
+            Logging.Info("PullFromTableWithNum", "Pulling process begins.");
             try
             {
                 Console.WriteLine(request.Username);
@@ -73,6 +74,7 @@ namespace OracleTest.Controllers
                 statusCode = (int)HttpStatusCode.InternalServerError;
                 result = new List<string>();
             }
+            Logging.Info("PullFromTableWithNum", "Pulling process ends.");
             this.HttpContext.Response.StatusCode = statusCode;
             foreach (string content in result)
             {
