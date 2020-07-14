@@ -63,8 +63,6 @@ namespace Utils
             Console.WriteLine(testQueryString);
             OracleCommand command = new OracleCommand(testQueryString, conn);
             conn.Open();
-            string testResult = "Connection state: " + conn.State;
-            Console.WriteLine(testResult);
             OracleDataReader reader = command.ExecuteReader();
             List<string> wkts = new List<string>();
             try

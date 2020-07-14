@@ -58,13 +58,12 @@ namespace OracleTest.Controllers
             httpResponse.Date = DateTime.Now;
             Console.WriteLine(httpResponse.Date);
             List<string> result;
+            Logging.Info("request", "Received request for PullFromTableWithNum");
+            Logging.Info("PullFromTableWithNum", "Tablename: " + request.Tablename);
+            Logging.Info("PullFromTableWithNum", "Row count to pull from: " + request.RowCount.ToString());
             Logging.Info("PullFromTableWithNum", "Pulling process begins.");
             try
             {
-                Console.WriteLine(request.Username);
-                Console.WriteLine(request.Password);
-                Console.WriteLine(request.Tablename);
-                Console.WriteLine(request.RowCount);
                 result = OracleTests.PullTest(request.Username, request.Password, request.Tablename, request.RowCount);
                 statusCode = (int)HttpStatusCode.OK;
             }
