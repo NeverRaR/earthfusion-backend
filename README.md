@@ -1,4 +1,8 @@
 # earthfusion-backend
+
+[![Travis CI Badge](https://api.travis-ci.org/xiongnemo/earthfusion-backend.svg)](https://travis-ci.org/github/xiongnemo/earthfusion-backend)
+[![CodeFactor](https://www.codefactor.io/repository/github/xiongnemo/earthfusion-backend/badge)](https://www.codefactor.io/repository/github/xiongnemo/earthfusion-backend)
+
 CSharp webapi for EarthFusion, project of Database course design, Tongji SSE, Jul 2020
 
 ## Init
