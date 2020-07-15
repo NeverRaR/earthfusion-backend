@@ -49,7 +49,7 @@ namespace OracleTest.Controllers
                 Username = Username,
                 Password = Password,
                 Tablename = Tablename,
-                RowCount = RowCount + 1
+                RowCount = RowCount
             };
             OracleWktResponse httpResponse = new OracleWktResponse();
             string message = "Okay....";
