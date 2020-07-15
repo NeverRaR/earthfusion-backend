@@ -56,7 +56,6 @@ namespace OracleTest.Controllers
             int statusCode;
             httpResponse.TableName = request.Tablename;
             httpResponse.Date = DateTime.Now;
-            Console.WriteLine(httpResponse.Date);
             List<string> result;
             Logging.Info("request", "Received request for PullFromTableWithNum");
             Logging.Info("PullFromTableWithNum", "Tablename: " + request.Tablename);
@@ -81,6 +80,7 @@ namespace OracleTest.Controllers
             }
             httpResponse.Message = message;
             httpResponse.StatusCode = statusCode;
+            Logging.Info("request", "Reponse returned for PullFromTableWithNum");
             return httpResponse;
         }
     }

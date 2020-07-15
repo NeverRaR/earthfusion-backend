@@ -13,7 +13,7 @@ namespace Utils
         {
             DateTime now = DateTime.Now;
             string timeString = now.ToString("MM/dd/yyyy hh:mm:ss.fff tt");
-            Console.WriteLine("[Info]" + timeString + caller + ": " + message);
+            Console.WriteLine("[Info]" + "[" + timeString + "] " + caller + ": " + message);
         }
     }
 }

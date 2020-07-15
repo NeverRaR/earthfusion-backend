@@ -59,8 +59,7 @@ namespace Utils
             OracleConnection conn = new OracleConnection();
             conn.ConnectionString = connString + username_string + ";Password=" + passwd_string;
             string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where rownum < " + rowCount.ToString()).ToString();
-            Console.Write("Constructed query: ");
-            Console.WriteLine(testQueryString);
+            Logging.Info("PullTest", "Constructed query: " + testQueryString);
             OracleCommand command = new OracleCommand(testQueryString, conn);
             conn.Open();
             OracleDataReader reader = command.ExecuteReader();
