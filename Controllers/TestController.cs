@@ -25,5 +25,24 @@ namespace OracleTest.Controllers
             SendgridHelpers.TestSend(receiver);
             return ("Sent to " + receiver).ToString();
         }
+
+        [HttpPost]
+        public string TestRedisSetString(string keyName, string value)
+        {
+            if (RedisHelpers.SetString(keyName, value))
+            {
+                return "Set success.";
+            }
+            else
+            {
+                return "Something bad happened";
+            }
+        }
+
+        [HttpGet]
+        public string TestRedisGetString(string keyName)
+        {
+            return RedisHelpers.GetString(keyName);
+        }
     }
 }
