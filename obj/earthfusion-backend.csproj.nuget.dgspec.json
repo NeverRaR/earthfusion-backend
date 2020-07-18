@@ -39,6 +39,10 @@
             "Oracle.ManagedDataAccess.Core": {
               "target": "Package",
               "version": "[2.19.70, )"
+            },
+            "Sendgrid": {
+              "target": "Package",
+              "version": "[9.18.0, )"
             }
           },
           "imports": [
