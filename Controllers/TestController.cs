@@ -27,22 +27,45 @@ namespace OracleTest.Controllers
         }
 
         [HttpPost]
-        public string TestRedisSetString(string keyName, string value)
+        public RedisSetStringResult TestRedisSetString(string keyName, string value)
         {
+            RedisSetStringResult httpResponse = new RedisSetStringResult();
+            httpResponse.Date = DateTime.Now;
+            httpResponse.KeyName = keyName;
+            httpResponse.Value = value;
+            int statusCode = (int)HttpStatusCode.OK;
             if (RedisHelpers.SetString(keyName, value))
             {
-                return "Set success.";
+                httpResponse.Message = "Set success";
             }
             else
             {
-                return "Something bad happened";
+                statusCode = (int)HttpStatusCode.InternalServerError;
+                httpResponse.Message = "Something not good happened...";
             }
+            this.HttpContext.Response.StatusCode = statusCode;
+            httpResponse.StatusCode = statusCode;
+            return httpResponse;
         }
 
         [HttpGet]
-        public string TestRedisGetString(string keyName)
+        public RedisGetStringResult TestRedisGetString(string keyName)
         {
-            return RedisHelpers.GetString(keyName);
+            RedisGetStringResult httpResponse = new RedisGetStringResult();
+            httpResponse.Date = DateTime.Now;
+            httpResponse.KeyName = keyName;
+            string tempResult = RedisHelpers.GetString(keyName);
+            int statusCode = (int)HttpStatusCode.OK;
+            if (tempResult == null)
+            {
+                statusCode = (int)HttpStatusCode.NoContent;
+                return null;
+            }
+            httpResponse.Message = "Okay..";
+            httpResponse.Value = tempResult;
+            this.HttpContext.Response.StatusCode = statusCode;
+            httpResponse.StatusCode = statusCode;
+            return httpResponse;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Utils
                                     "(DESCRIPTION=" +
                                         "(ADDRESS=" +
                                             "(PROTOCOL=TCP)" +
-                                            "(HOST=ssh.ipv4.chicken.anzupop.com)" +
+                                            "(HOST=localhost)" +
                                             "(PORT=1521)" +
                                         ")" +
                                         "(CONNECT_DATA=" +
@@ -45,7 +45,7 @@ namespace Utils
                                     "(DESCRIPTION=" +
                                         "(ADDRESS=" +
                                             "(PROTOCOL=TCP)" +
-                                            "(HOST=ssh.ipv4.chicken.anzupop.com)" +
+                                            "(HOST=localhost)" +
                                             "(PORT=1521)" +
                                         ")" +
                                         "(CONNECT_DATA=" +
