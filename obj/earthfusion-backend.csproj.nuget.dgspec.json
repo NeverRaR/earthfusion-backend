@@ -43,6 +43,10 @@
             "Sendgrid": {
               "target": "Package",
               "version": "[9.18.0, )"
+            },
+            "StackExchange.Redis": {
+              "target": "Package",
+              "version": "[2.1.58, )"
             }
           },
           "imports": [
