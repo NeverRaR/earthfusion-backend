@@ -8,6 +8,7 @@ CSharp webapi for EarthFusion, project of Database course design, Tongji SSE, Ju
 ## Init
 ```bash
 dotnet add package Oracle.ManagedDataAccess.Core --version 2.19.70
+dotnet add package Sendgrid --version 9.18.0
 ```
 
 ## Dev Logs
