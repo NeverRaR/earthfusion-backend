@@ -64,6 +64,10 @@ namespace OracleTest.Controllers
             try
             {
                 result = OracleTests.PullTest(request.Username, request.Password, request.Tablename, request.RowCount);
+                if (result.Count() == 0)
+                {
+                    message = "No row(s) selected.";
+                }
                 statusCode = (int)HttpStatusCode.OK;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException e)
