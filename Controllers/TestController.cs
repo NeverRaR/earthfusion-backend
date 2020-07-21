@@ -10,11 +10,12 @@ using Utils;
 
 namespace OracleTest.Controllers
 {
-    //路由设置
+    // route
     [Route("api-for-test/[controller]/[action]")]
     [ApiController]
     public class TestController : ControllerBase
     {
+        // email
         [HttpPost]
         public string TestSendgrid(string receiver)
         {
@@ -26,6 +27,7 @@ namespace OracleTest.Controllers
             return ("Sent to " + receiver).ToString();
         }
 
+        // redis
         [HttpPost]
         public RedisSetStringResult TestRedisSetString(string keyName, string value)
         {
@@ -63,6 +65,30 @@ namespace OracleTest.Controllers
             }
             httpResponse.Message = "Okay..";
             httpResponse.Value = tempResult;
+            this.HttpContext.Response.StatusCode = statusCode;
+            httpResponse.StatusCode = statusCode;
+            return httpResponse;
+        }
+
+        [HttpPost]
+        public RedisSetKeyExpireTimeResult SetRedisKeyExpireTime(string keyName, int timeSeconds)
+        {
+            RedisSetKeyExpireTimeResult httpResponse = new RedisSetKeyExpireTimeResult();
+            httpResponse.Date = DateTime.Now;
+            httpResponse.KeyName = keyName;
+            httpResponse.ExpiryTimeInSeconds = timeSeconds;
+            int statusCode = (int)HttpStatusCode.OK;
+            if (RedisHelpers.SetKeyExpireTime(keyName, timeSeconds))
+            {
+                httpResponse.Message = "Set expiry time success";
+                TimeSpan interval = new TimeSpan(0, 0, timeSeconds);
+                httpResponse.ExpectedExpiryDate = DateTime.Now + interval;
+            }
+            else
+            {
+                statusCode = (int)HttpStatusCode.InternalServerError;
+                httpResponse.Message = "Something not good happened...";
+            }
             this.HttpContext.Response.StatusCode = statusCode;
             httpResponse.StatusCode = statusCode;
             return httpResponse;
