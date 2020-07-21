@@ -15,9 +15,20 @@ namespace earthfusion_backend
         {
             CreateWebHostBuilder(args).Build().Run();
         }
-
+        
+        // public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        //     WebHost.CreateDefaultBuilder(args)
+        //     .UseUrls(Variables.listenUrls)
+        //     .UseStartup<Startup>();
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args).UseUrls("http://*:5000")
-                .UseStartup<Startup>();
+            WebHost.CreateDefaultBuilder(args).UseKestrel(options =>
+            {
+                options.Listen(Variables.allIpv6, 5000);
+                options.Listen(Variables.allIpv6, 5001, listenOptions =>
+                {
+                    listenOptions.UseHttps("certificate.pfx", "");
+                });
+            })
+            .UseStartup<Startup>();
     }
 }
