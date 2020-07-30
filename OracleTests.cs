@@ -11,28 +11,7 @@ namespace Utils
     {
         public static string ConnectionTest(string username, string passwd, bool connectAsDba)
         {
-            string passwd_string, username_string;
-            string connString = "Data Source=" +
-                                    "(DESCRIPTION=" +
-                                        "(ADDRESS=" +
-                                            "(PROTOCOL=TCP)" +
-                                            "(HOST=localhost)" +
-                                            "(PORT=1521)" +
-                                        ")" +
-                                        "(CONNECT_DATA=" +
-                                            /// "(SERVICE_NAME=PDB1.localdomain)" +
-                                            "(SID=xe)" +
-                                        ")" +
-                                    ");" +
-                                "User ID=";
-            username_string = username;
-            passwd_string = passwd;
-            OracleConnection conn = new OracleConnection();
-            conn.ConnectionString = connString + username_string + ";Password=" + passwd_string;
-            if (connectAsDba)
-            {
-                conn.ConnectionString += ";DBA Privilege=SYSDBA;";
-            }
+            OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, connectAsDba);
             conn.Open();
             string testResult = "Connection state: " + conn.State;
             conn.Close();
@@ -40,24 +19,7 @@ namespace Utils
         }
         public static List<string> PullTest(string username, string passwd, string tableName, int rowCount)
         {
-            string passwd_string, username_string;
-            string connString = "Data Source=" +
-                                    "(DESCRIPTION=" +
-                                        "(ADDRESS=" +
-                                            "(PROTOCOL=TCP)" +
-                                            "(HOST=localhost)" +
-                                            "(PORT=1521)" +
-                                        ")" +
-                                        "(CONNECT_DATA=" +
-                                            /// "(SERVICE_NAME=PDB1.localdomain)" +
-                                            "(SID=xe)" +
-                                        ")" +
-                                    ");" +
-                                "User ID=";
-            username_string = username;
-            passwd_string = passwd;
-            OracleConnection conn = new OracleConnection();
-            conn.ConnectionString = connString + username_string + ";Password=" + passwd_string;
+            OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
             string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
             Logging.Info("PullTest", "Constructed query: " + testQueryString);
             OracleCommand command = new OracleCommand(testQueryString, conn);
