@@ -6,6 +6,7 @@
 CSharp webapi for EarthFusion, project of Database course design, Tongji SSE, Jul 2020
 
 ## Init
+
 ```bash
 dotnet add package Oracle.ManagedDataAccess.Core --version 2.19.70
 dotnet add package Sendgrid --version 9.18.0
@@ -17,16 +18,15 @@ dotnet add package LettuceEncrypt --version 1.0.0 # if you want to automatically
 
 ### 2020/7/12
 
-Finished: 
-
 - [X] Pull first *** wkt rows with given TableName.
-
 
 ### 2020/7/21
 
-Finished:
-
 - [X] HTTPS support.
+
+### 2020/8/2
+
+- [X] Response compression, enabled over HTTPS: [source](https://docs.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-3.1)
 
 Todo:
 
