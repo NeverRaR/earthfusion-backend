@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using System.Net.Mail;
 
 namespace Utils
 {
@@ -20,5 +21,19 @@ namespace Utils
             }
             return false;
         }
+
+        public static bool IsEmailAddressValid(string emailAddress)
+        {
+            try
+            {
+                MailAddress m = new MailAddress(emailAddress);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+        
     }
 }

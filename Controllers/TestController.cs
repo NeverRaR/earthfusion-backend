@@ -19,7 +19,7 @@ namespace Test.Controllers
         [HttpPost]
         public string TestSendgrid(string receiver)
         {
-            if (!Utils.Utils.IsEmailAddressValid(receiver))
+            if (!GenericHelpers.IsEmailAddressValid(receiver))
             {
                 return ("Illegal email address: " + receiver).ToString();
             }
