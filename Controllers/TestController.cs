@@ -112,5 +112,37 @@ namespace Test.Controllers
             httpResponse.StatusCode = statusCode;
             return httpResponse;
         }
+
+        [HttpGet]
+        public PasswordScoreResult ScorePassword(string passwdToScore)
+        {
+            PasswordScoreResult httpResponse = new PasswordScoreResult();
+            httpResponse.Date = DateTime.Now;
+            httpResponse.Tester = passwdToScore;
+            int statusCode = (int)HttpStatusCode.OK;
+            PasswordScore score = GenericHelpers.CheckStrength(passwdToScore);
+            httpResponse.Score = score;
+            httpResponse.Message = "Blank password!";
+            int result = (int)score;
+            if (result <= (int)PasswordScore.Blank)
+            {
+                httpResponse.Message = "Blank password!";
+            }
+            else if (result <= (int)PasswordScore.Weak)
+            {
+                httpResponse.Message = "Weak password, bad for you.";
+            }
+            else if (result <= (int)PasswordScore.Medium)
+            {
+                httpResponse.Message = "Medium password strength.";
+            }
+            else if (result <= (int)PasswordScore.VeryStrong)
+            {
+                httpResponse.Message = "Strong password. Good!";
+            }
+            this.HttpContext.Response.StatusCode = statusCode;
+            httpResponse.StatusCode = statusCode;
+            return httpResponse;
+        }
     }
 }
