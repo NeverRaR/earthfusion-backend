@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Utils;
 
-namespace OracleTest.Controllers
+namespace Test.Controllers
 {
     // route
     [Route("api-for-test/[controller]/[action]")]
@@ -88,6 +88,25 @@ namespace OracleTest.Controllers
             {
                 statusCode = (int)HttpStatusCode.InternalServerError;
                 httpResponse.Message = "Something not good happened...";
+            }
+            this.HttpContext.Response.StatusCode = statusCode;
+            httpResponse.StatusCode = statusCode;
+            return httpResponse;
+        }
+
+        [HttpGet]
+        public GenericTestResult TestPassword(string passwdToTest)
+        {
+            GenericTestResult httpResponse = new GenericTestResult();
+            httpResponse.Date = DateTime.Now;
+            httpResponse.Tester = passwdToTest;
+            int statusCode = (int)HttpStatusCode.OK;
+            bool result = GenericHelpers.CheckPasswordStrength(passwdToTest);
+            httpResponse.BoolResult = result;
+            httpResponse.Message = "good password strength";
+            if (result == false)
+            {
+                httpResponse.Message = "bad password strength";
             }
             this.HttpContext.Response.StatusCode = statusCode;
             httpResponse.StatusCode = statusCode;
