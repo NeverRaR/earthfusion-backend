@@ -24,13 +24,22 @@ namespace Utils
             OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
             string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
             Logging.Info("PullTest", "Constructed query: " + testQueryString);
+            
+            // has name?
             bool hasName = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, "NAME".ToString());
             if (hasName)
             {
+                // also grab the name.
                 testQueryString = ("select SDO_GEOMETRY.get_wkt(geom), NAME from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
             }
+
+            // constructs command from string
             OracleCommand command = new OracleCommand(testQueryString, conn);
+
+            // open db connection
             conn.Open();
+
+            // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
             List<WktWithName> contents = new List<WktWithName>();
             try
@@ -42,6 +51,8 @@ namespace Utils
                     string name = null;
                     if (hasName)
                     {
+                        // some data still has null string even there is name column
+                        // also, this proves to be useful when we didn't select name from the table.
                         try
                         {
                             name = reader.GetString(1);
