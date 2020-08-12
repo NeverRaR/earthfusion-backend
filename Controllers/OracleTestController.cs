@@ -18,8 +18,11 @@ namespace OracleTest.Controllers
     public class OracleTestController : ControllerBase
     {
         [HttpGet]
+        
+        // This self-defined request should use Content-Type: applicaion/json. 
         public IEnumerable<OracleConnectionTestResult> DatabaseConnectionTest(OracleConnectionTestRequest request)
         {
+            // init variables
             string message;
             int statusCode;
             try
@@ -29,6 +32,7 @@ namespace OracleTest.Controllers
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException e)
             {
+                // truncate to just the first line
                 message = e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault();
                 statusCode = (int)HttpStatusCode.Forbidden;
             }
@@ -59,13 +63,20 @@ namespace OracleTest.Controllers
             httpResponse.TableName = request.Tablename;
             httpResponse.Date = DateTime.Now;
             List<WktWithName> result;
+
             Logging.Info("request", "Received request for PullFromTableWithNum");
             Logging.Info("PullFromTableWithNum", "Tablename: " + request.Tablename);
             Logging.Info("PullFromTableWithNum", "Row count to pull from: " + request.RowCount.ToString());
             Logging.Info("PullFromTableWithNum", "Pulling process begins.");
+
+            // Todo: If no geom columns, throw something.
+
             try
             {
+                // get result
                 result = OracleTests.WktPullTest(request.Username, request.Password, request.Tablename, request.RowCount);
+                
+                // if no row seleted...
                 if (result.Count() == 0)
                 {
                     message = "No row(s) selected.";
@@ -74,16 +85,25 @@ namespace OracleTest.Controllers
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException e)
             {
+                // if something happened within Oracle
                 message = e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault();
                 statusCode = (int)HttpStatusCode.InternalServerError;
                 result = new List<WktWithName>();
             }
             Logging.Info("PullFromTableWithNum", "Pulling process ends.");
             this.HttpContext.Response.StatusCode = statusCode;
+
+            // constructs content
             foreach (WktWithName content in result)
             {
                 httpResponse.Contents.Add(content);
             }
+            // // or should i just use the result?
+            // httpResponse.Contents = result;
+            
+            // tests shows there are no statical difference by the means of time. 
+
+            // restore table information with predefined dict (Classes/KnownTables.cs)
             try
             {
                 GeomTableTypes currentTableType = OracleTest.Globals.knownTables.knownTableType[Tablename];
@@ -103,14 +123,14 @@ namespace OracleTest.Controllers
             return httpResponse;
         }
 
-        [HttpGet]
-        // This is for test purpose only
-        public string CheckWhetherColumnNameExistsInTable(string username, string passwd, string tableName, string columnName)
-        {
-            OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
-            bool test = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, columnName);
-            Console.WriteLine(tableName + " " + columnName + " " + "result: " + test);
-            return test.ToString();
-        }
+        // [HttpGet]
+        // // This is for test purpose only
+        // public string CheckWhetherColumnNameExistsInTable(string username, string passwd, string tableName, string columnName)
+        // {
+        //     OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
+        //     bool test = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, columnName);
+        //     Console.WriteLine(tableName + " " + columnName + " " + "result: " + test);
+        //     return test.ToString();
+        // }
     }
 }
