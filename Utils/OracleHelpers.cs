@@ -12,6 +12,7 @@ namespace Utils
         public static OracleConnection GetOracleConnection(string username, string passwd, bool connectAsDba)
         {
             string passwd_string, username_string;
+            // connection string.
             string connString = "Data Source=" +
                                     "(DESCRIPTION=" +
                                         "(ADDRESS=" +
@@ -37,6 +38,7 @@ namespace Utils
 
         public static bool IsColumnNameExistsInTableName(OracleConnection conn, string tableName, string columnName)
         {
+            // search all_tab_cols for the result.
             string testQueryString = (
                                         (
                                             "select column_name as found from all_tab_cols where table_name = '"
@@ -58,6 +60,7 @@ namespace Utils
                     // Console.WriteLine(reader.GetString(0));
                     string column_name = reader.GetString(0);
                     result.Add(column_name);
+                    // should I just returns true at this point?
                 }
             }
             finally
