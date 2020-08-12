@@ -110,7 +110,6 @@ namespace OracleTest.Controllers
                 httpResponse.GeomTypeId = currentTableType.GeomTypeId;
                 httpResponse.LineOrBoundaryTypeId = currentTableType.LineOrBoundaryTypeId;
                 httpResponse.EntityTypeId = currentTableType.EntityTypeId;
-
             }
             catch (KeyNotFoundException)
             {
