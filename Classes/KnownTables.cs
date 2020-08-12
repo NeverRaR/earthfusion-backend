@@ -25,6 +25,9 @@ namespace OracleTest
                 AddFrom(temp.Item1, temp.Item2, temp.Item3, temp.Item4);
             }
         }
+        
+        // The type of lists I currently known.
+        // refer to those who has the datasets for detailed information.
         private List<(string, GeometryDataType, LineOrBoundaryType, EntityType)> list = new List<(string, GeometryDataType, LineOrBoundaryType, EntityType)>
         {
             ("NE_10M_LAND", GeometryDataType.LineOrBoundary, LineOrBoundaryType.LandBoundary, EntityType.NonEntity),
@@ -45,6 +48,8 @@ namespace OracleTest
             ("CHINA_ROAD_NETWORK", GeometryDataType.LineOrBoundary, LineOrBoundaryType.RoadLine, EntityType.NonEntity),
 
         };
+
+        // real dict to query from
         public Dictionary<string, GeomTableTypes> knownTableType = new Dictionary<string, GeomTableTypes>();
     }
 }
