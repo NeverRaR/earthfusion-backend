@@ -1,8 +1,8 @@
 using System;
 
-
 namespace Test
 {
+    // This class represents a generic test result, which can be use under many circumstances.
     public class GenericTestResult
     {
         public DateTime Date { get; set; }
