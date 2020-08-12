@@ -13,6 +13,8 @@ namespace OracleTest
         public OracleWktResponse()
         {
             Contents = new List<WktWithName>();
+            
+            // assume all tables don't have geom data.
             GeomTypeId = GeometryDataType.NonGeometryData;
             LineOrBoundaryTypeId = LineOrBoundaryType.NonLineOrBoundary;
             EntityTypeId = EntityType.NonEntity;
