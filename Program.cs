@@ -23,9 +23,10 @@ namespace earthfusion_backend
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args).UseKestrel(options =>
             {
-                options.Listen(Variables.allIpv6, 5000);
-                options.Listen(Variables.allIpv6, 5001, listenOptions =>
+                options.Listen(Variables.allIpv4, 5000);
+                options.Listen(Variables.allIpv4, 5001, listenOptions =>
                 {
+                    // here, grab your https certificate.pfx.
                     listenOptions.UseHttps("certificate.pfx", "");
                 });
             })

@@ -30,6 +30,7 @@ namespace earthfusion_backend
             // services.AddLettuceEncrypt();
             services.AddControllers();
             services.AddAuthentication();
+            // this adds compression using so called ResponseCompression Middleware. See Microsoft docs for detail.
             services.AddResponseCompression(options =>
             {
                 options.Providers.Add<BrotliCompressionProvider>();
