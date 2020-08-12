@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Utils;
+using Oracle.ManagedDataAccess.Client;
+using OracleTest;
 
 namespace OracleTest.Controllers
 {
@@ -56,14 +58,14 @@ namespace OracleTest.Controllers
             int statusCode;
             httpResponse.TableName = request.Tablename;
             httpResponse.Date = DateTime.Now;
-            List<string> result;
+            List<WktWithName> result;
             Logging.Info("request", "Received request for PullFromTableWithNum");
             Logging.Info("PullFromTableWithNum", "Tablename: " + request.Tablename);
             Logging.Info("PullFromTableWithNum", "Row count to pull from: " + request.RowCount.ToString());
             Logging.Info("PullFromTableWithNum", "Pulling process begins.");
             try
             {
-                result = OracleTests.PullTest(request.Username, request.Password, request.Tablename, request.RowCount);
+                result = OracleTests.WktPullTest(request.Username, request.Password, request.Tablename, request.RowCount);
                 if (result.Count() == 0)
                 {
                     message = "No row(s) selected.";
@@ -74,18 +76,41 @@ namespace OracleTest.Controllers
             {
                 message = e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault();
                 statusCode = (int)HttpStatusCode.InternalServerError;
-                result = new List<string>();
+                result = new List<WktWithName>();
             }
             Logging.Info("PullFromTableWithNum", "Pulling process ends.");
             this.HttpContext.Response.StatusCode = statusCode;
-            foreach (string content in result)
+            foreach (WktWithName content in result)
             {
                 httpResponse.Contents.Add(content);
             }
+            try
+            {
+                GeomTableTypes currentTableType = OracleTest.Globals.knownTables.knownTableType[Tablename];
+                httpResponse.GeomTypeId = currentTableType.GeomTypeId;
+                httpResponse.LineOrBoundaryTypeId = currentTableType.LineOrBoundaryTypeId;
+                httpResponse.EntityTypeId = currentTableType.EntityTypeId;
+
+            }
+            catch (KeyNotFoundException)
+            {
+                Logging.Warning("PullFromTableWithNum", "No information found for table " + Tablename);
+            }
+
             httpResponse.Message = message;
             httpResponse.StatusCode = statusCode;
             Logging.Info("request", "Reponse returned for PullFromTableWithNum");
             return httpResponse;
+        }
+
+        [HttpGet]
+        // This is for test purpose only
+        public string CheckWhetherColumnNameExistsInTable(string username, string passwd, string tableName, string columnName)
+        {
+            OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
+            bool test = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, columnName);
+            Console.WriteLine(tableName + " " + columnName + " " + "result: " + test);
+            return test.ToString();
         }
     }
 }

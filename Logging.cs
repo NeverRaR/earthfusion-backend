@@ -15,5 +15,13 @@ namespace Utils
             string timeString = now.ToString("MM/dd/yyyy hh:mm:ss.fff tt");
             Console.WriteLine("[Info]" + "[" + timeString + "] " + caller + ": " + message);
         }
+        public static void Warning(string caller, string message)
+        {
+            DateTime now = DateTime.Now;
+            string timeString = now.ToString("MM/dd/yyyy hh:mm:ss.fff tt");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("[Warning]" + "[" + timeString + "] " + caller + ": " + message);
+            Console.ResetColor();
+        }
     }
 }
