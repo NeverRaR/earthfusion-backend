@@ -20,6 +20,7 @@ namespace Utils
         }
         public static bool SetKeyExpireTime(string keyName, int expireTimeInSeconds)
         {
+            // trick: set time interval using seconds
             TimeSpan interval = new TimeSpan(0, 0, expireTimeInSeconds);
             bool status = local_redis_database.KeyExpire(keyName, interval);
             return status;

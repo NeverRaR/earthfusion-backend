@@ -81,6 +81,7 @@ namespace Test.Controllers
             if (RedisHelpers.SetKeyExpireTime(keyName, timeSeconds))
             {
                 httpResponse.Message = "Set expiry time success";
+                // trick: set time interval using seconds
                 TimeSpan interval = new TimeSpan(0, 0, timeSeconds);
                 httpResponse.ExpectedExpiryDate = DateTime.Now + interval;
             }
