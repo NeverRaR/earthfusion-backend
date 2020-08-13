@@ -145,5 +145,55 @@ namespace Test.Controllers
             httpResponse.StatusCode = statusCode;
             return httpResponse;
         }
+
+        [HttpPost]
+        public GenericTestResult RequestVerificationCode(string emailAddress)
+        {
+            GenericTestResult httpResponse = new GenericTestResult();
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            httpResponse.Operation = "Client request for a verifaction code.";
+            if (!GenericHelpers.IsEmailAddressValid(emailAddress))
+            {
+                httpResponse.Message = "Illegal email address: " + emailAddress;
+            }
+            else
+            {
+                bool test = SessionHelpers.RequestVerificationCode(emailAddress);
+                if (!test)
+                {
+                    statusCode = (int)HttpStatusCode.InternalServerError;
+                    httpResponse.Message = "Something bad happened...";
+                }
+                else
+                {
+                    httpResponse.Message = "Ok";
+                }
+                httpResponse.BoolResult = test;
+            }
+            httpResponse.StatusCode = statusCode;
+            return httpResponse;
+        }
+
+        [HttpGet]
+        public GenericTestResult CompareVerificationCode(string emailAddress, int verificationCodeToCheck)
+        {
+            GenericTestResult httpResponse = new GenericTestResult();
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            httpResponse.Operation = "Client request for a verifaction code check";
+            bool test = SessionHelpers.CompareVerificationCode(emailAddress, verificationCodeToCheck);
+            if (!test)
+            {
+                httpResponse.Message = "The code maybe wrong.";
+            }
+            else
+            {
+                httpResponse.Message = "The code is ok.";
+            }
+            httpResponse.BoolResult = test;
+            httpResponse.StatusCode = statusCode;
+            return httpResponse;
+        }
     }
 }

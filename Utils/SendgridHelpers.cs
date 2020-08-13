@@ -26,5 +26,24 @@ namespace Utils
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = await client.SendEmailAsync(msg);
         }
+
+        public static void SendVerificationCodeTask(string receiver, string nickname, string verificationCodeString)
+        {
+            
+            SendWithVerificationTemplate(receiver, nickname, verificationCodeString).Wait();
+        }
+
+        private static async Task SendWithVerificationTemplate(string receiver, string nickname, string verificationCodeString)
+        {
+            var apiKey = Environment.GetEnvironmentVariable("EARTH_FUSION_EMAIL_API_KEY");
+            var client = new SendGridClient(apiKey);
+            var from = new EmailAddress("earth-fusion@anzupop.com", "Administrators");
+            var subject = "Your Earth Fusion verification code";
+            var to = new EmailAddress(receiver, nickname);
+            var plainTextContent = "";
+            var htmlContent = "Your verification code is <strong>" + verificationCodeString + "</strong>";
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            var response = await client.SendEmailAsync(msg);
+        }
     }
 }
