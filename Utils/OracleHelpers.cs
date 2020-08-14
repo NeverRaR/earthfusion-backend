@@ -33,6 +33,16 @@ namespace Utils
             {
                 conn.ConnectionString += ";DBA Privilege=SYSDBA;";
             }
+            string logMessage = "constructed connection string for username=" + username + ", password=" + passwd;
+            if (connectAsDba)
+            {
+                logMessage += ", WITH SYSDBA privilege.";
+            }
+            else
+            {
+                logMessage += ", WITHOUT privilege.";
+            }
+            Logging.Info("OracleHelpers.GetOracleConnection",  logMessage);
             return conn;
         }
 

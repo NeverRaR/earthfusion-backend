@@ -77,6 +77,7 @@ namespace OracleTest.Controllers
                 // if no row seleted...
                 if (result.Count() == 0)
                 {
+                    Logging.Warning("PullFromTableWithNum", "Pulling process returned with 0 row when trying to pull from " + Tablename);
                     message = "No row(s) selected. There maybe no geometry data in column GEOM or that column doesn't exist.";
                 }
                 statusCode = (int)HttpStatusCode.OK;
@@ -86,6 +87,7 @@ namespace OracleTest.Controllers
                 // if something happened within Oracle
                 message = e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault();
                 statusCode = (int)HttpStatusCode.InternalServerError;
+                Logging.Warning("PullFromTableWithNum", "Pulling process got something bad when pulling from " + Tablename + " with a message of " + message);
                 result = new List<WktWithName>();
             }
             Logging.Info("PullFromTableWithNum", "Pulling process ends.");
@@ -108,6 +110,7 @@ namespace OracleTest.Controllers
                 httpResponse.GeomTypeId = currentTableType.GeomTypeId;
                 httpResponse.LineOrBoundaryTypeId = currentTableType.LineOrBoundaryTypeId;
                 httpResponse.EntityTypeId = currentTableType.EntityTypeId;
+                Logging.Info("PullFromTableWithNum", "Got information found for table " + Tablename);
             }
             catch (KeyNotFoundException)
             {

@@ -43,6 +43,7 @@ namespace Utils
             var htmlContent = "Your verification code is <strong>" + verificationCodeString + "</strong>";
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = await client.SendEmailAsync(msg);
+            Logging.Info("SendWithVerificationTemplate", "Sent for " + receiver + " with code " + verificationCodeString);
         }
     }
 }
