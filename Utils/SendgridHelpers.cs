@@ -29,7 +29,6 @@ namespace Utils
 
         public static void SendVerificationCodeTask(string receiver, string nickname, string verificationCodeString)
         {
-            
             SendWithVerificationTemplate(receiver, nickname, verificationCodeString).Wait();
         }
 
