@@ -69,8 +69,6 @@ namespace OracleTest.Controllers
             Logging.Info("PullFromTableWithNum", "Row count to pull from: " + request.RowCount.ToString());
             Logging.Info("PullFromTableWithNum", "Pulling process begins.");
 
-            // Todo: If no geom columns, throw something.
-
             try
             {
                 // get result
@@ -79,7 +77,7 @@ namespace OracleTest.Controllers
                 // if no row seleted...
                 if (result.Count() == 0)
                 {
-                    message = "No row(s) selected.";
+                    message = "No row(s) selected. There maybe no geometry data in column GEOM or that column doesn't exist.";
                 }
                 statusCode = (int)HttpStatusCode.OK;
             }

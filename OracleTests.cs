@@ -21,10 +21,22 @@ namespace Utils
         }
         public static List<WktWithName> WktPullTest(string username, string passwd, string tableName, int rowCount)
         {
+            // conn to use
             OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
+
+            // List to return
+            List<WktWithName> contents = new List<WktWithName>();
+
             string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
             Logging.Info("PullTest", "Constructed query: " + testQueryString);
             
+            // has geom?
+            bool hasGeom = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, "GEOM".ToString());
+            if (!hasGeom)
+            {
+                return contents;
+            }
+
             // has name?
             bool hasName = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, "NAME".ToString());
             if (hasName)
@@ -41,7 +53,6 @@ namespace Utils
 
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            List<WktWithName> contents = new List<WktWithName>();
             try
             {
                 while (reader.Read())
