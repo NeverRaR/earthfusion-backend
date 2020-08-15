@@ -19,7 +19,6 @@ namespace OracleTest.Controllers
     public class EarthFusionController : ControllerBase
     {
         [HttpGet]
-
         public Session GetLoginSession(string username, string password)
         {
             Session httpResponse = new Session();
@@ -55,6 +54,32 @@ namespace OracleTest.Controllers
                 httpResponse.sessionId = sessionId;
             }
             httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
+            return httpResponse;
+        }
+        
+        [HttpGet]
+        public UserInformationHttp GetSession(string sessionId)
+        {
+            UserInformationHttp httpResponse = new UserInformationHttp();
+            Logging.Info("request", "Received request for GetSession");
+            Logging.Info("GetSession", "sessionId: " + sessionId);
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            Logging.Info("GetSession", "Begins.");
+            UserInformation currentUser = SessionHelpers.Validate(sessionId);
+            if (currentUser == null)
+            {
+                httpResponse.Message = "No such user.";
+                statusCode = (int)HttpStatusCode.Forbidden;
+            }
+            else
+            {
+                httpResponse.Message = "Okay..";
+                httpResponse.userInformation = currentUser;
+            }
+            httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
             return httpResponse;
         }
     }

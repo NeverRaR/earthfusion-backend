@@ -174,5 +174,13 @@ namespace EarthFusion
                 return result[0];
             }
         }
+
+        public static UserInformation Validate(string sessionId)
+        {
+            string oracleUsername = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_DB_USERNAME");
+            string oraclePassword = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_DB_PASSWORD");
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
+            return ValidateSession(conn, sessionId);
+        }
     }
 }
