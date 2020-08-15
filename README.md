@@ -14,6 +14,16 @@ dotnet add package StackExchange.Redis --version 2.1.58
 dotnet add package LettuceEncrypt --version 1.0.0 # if you want to automatically obtain Let's Encrypt's certs
 ```
 
+## Run
+
+```bash
+export EARTH_FUSION_EMAIL_API_KEY="***" # Sendgrid API Key
+export EARTH_FUSION_SPATIAL_DB_USERNAME="***" # Oracle
+export EARTH_FUSION_SPATIAL_DB_PASSWORD="***" # Oracle
+dotnet build
+./bin/Debug/netcoreapp3.1/earthfusion-backend
+```
+
 ## Dev Logs
 
 ### 2020/7/12

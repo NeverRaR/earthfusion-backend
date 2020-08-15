@@ -40,7 +40,11 @@ namespace Utils
             var subject = "Your Earth Fusion verification code";
             var to = new EmailAddress(receiver, nickname);
             var plainTextContent = "";
-            var htmlContent = "Your verification code is <strong>" + verificationCodeString + "</strong>";
+            var htmlContent = "Your verification code is <strong>" + verificationCodeString + "</strong>. This code is valid 10 minutes from now.";
+            htmlContent += "<br>";
+            htmlContent += "We, EarthFusion Administrators, will <strong>BY NO MEANS</strong> reach to you for your code.";
+            htmlContent += "<br>";
+            htmlContent += "Keep your code somewhere secure and safe.";
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = await client.SendEmailAsync(msg);
             Logging.Info("SendWithVerificationTemplate", "Sent for " + receiver + " with code " + verificationCodeString);
