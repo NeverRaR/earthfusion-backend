@@ -20,9 +20,13 @@ dotnet add package LettuceEncrypt --version 1.0.0 # if you want to automatically
 export EARTH_FUSION_EMAIL_API_KEY="***" # Sendgrid API Key
 export EARTH_FUSION_SPATIAL_DB_USERNAME="***" # Oracle
 export EARTH_FUSION_SPATIAL_DB_PASSWORD="***" # Oracle
+export EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME="***" # Oracle
+export EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD="***" # Oracle
 dotnet build
 ./bin/Debug/netcoreapp3.1/earthfusion-backend
 ```
+
+* It's recommended to create a script.
 
 ## Dev Logs
 

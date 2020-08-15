@@ -46,7 +46,7 @@ namespace Utils
             return conn;
         }
 
-        public static bool IsColumnNameExistsInTableName(OracleConnection conn, string tableName, string columnName)
+        public static bool IsColumnNameExistInTableName(OracleConnection conn, string tableName, string columnName)
         {
             // search all_tab_cols for the result.
             string testQueryString = (
@@ -85,6 +85,33 @@ namespace Utils
                 return true;
             }
             Logging.Info("IsColumnNameExistsInTableName", "Column name " + columnName + " DOES NOT EXIST in table " + tableName);
+            return false;
+        }
+
+        public static bool IsRowExistInColumnInTableName(OracleConnection conn, string query, string tableName, string columnName)
+        {
+            string testQueryString= "select count(*) from " + tableName + " where " + columnName + " = '" + query + "'";
+            OracleCommand command = new OracleCommand(testQueryString, conn);
+            conn.Open();
+            OracleDataReader reader = command.ExecuteReader();
+            int result = 0;
+            try
+            {
+                while (reader.Read())
+                {
+                   result = reader.GetInt32(0);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            if (result > 0)
+            {
+                return true;
+            }
+            conn.Close();
             return false;
         }
     }

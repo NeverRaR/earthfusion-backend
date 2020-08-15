@@ -82,5 +82,30 @@ namespace OracleTest.Controllers
             this.HttpContext.Response.StatusCode = statusCode;
             return httpResponse;
         }
+
+        [HttpPost]
+        public RegisterResult RegisterAccount(string username, string password)
+        {
+            RegisterResult httpResponse = new RegisterResult();
+            Logging.Info("request", "Received request for RegisterAccount");
+            Logging.Info("RegisterAccount", "username: " + username);
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            Logging.Info("RegisterAccount", "Begins.");
+            bool result = SessionHelpers.RegisterWithoutEmail(username, password);
+            httpResponse.Result = result;
+            if (!result)
+            {
+                httpResponse.Message = "Register failed. Maybe the username specified has already exists.";
+                statusCode = (int)HttpStatusCode.Forbidden;
+            }
+            else
+            {
+                httpResponse.Message = "Okay..";
+            }
+            httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
+            return httpResponse;
+        }
     }
 }

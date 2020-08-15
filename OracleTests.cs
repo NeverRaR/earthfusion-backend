@@ -30,14 +30,14 @@ namespace Utils
             string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
             
             // has geom?
-            bool hasGeom = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, "GEOM".ToString());
+            bool hasGeom = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "GEOM".ToString());
             if (!hasGeom)
             {
                 return contents;
             }
 
             // has name?
-            bool hasName = OracleHelpers.IsColumnNameExistsInTableName(conn, tableName, "NAME".ToString());
+            bool hasName = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "NAME".ToString());
             if (hasName)
             {
                 // also grab the name.

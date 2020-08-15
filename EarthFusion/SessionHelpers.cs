@@ -43,7 +43,7 @@ namespace EarthFusion
             return false;
         }
 
-        public static bool Register(string emailAddress, string nickname, string password)
+        public static bool RegisterWithoutEmail(string username, string password)
         {
             // CREATE TABLE earthfusion_users(
             // user_id NUMBER,
@@ -62,15 +62,61 @@ namespace EarthFusion
             // user_password_hashed: hashed password. SHA256 only.
             // user_status: is the user enabled? "enabled"/"disabled"
             // user_role: administrator/user
+            string oracleSpatialAdminUsername = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME");
+            string oracleSpatialAdminPassword = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD");
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            
+            // currently the frontend register without email address
+            string emailAddress = "BOOOOOM@BOOM.BOM";
 
-            // TODO: generate uuid
+            return CreateUserRow(conn, username, emailAddress, password);
+        }
 
-            // TODO: insert into database
+        public static bool CreateUserRow(OracleConnection conn, string username, string emailAddress, string password)
+        {
             // insert into earthfusion_users
             // (user_id, user_name, user_email, USER_PASSWORD_HASHED, USER_STATUS, USER_ROLE)
             // values
             // (1, 'marshmallow', 'marshmallow@anzupop.com', '5a9fee2cb0e686d7d9022dfc72ccb160d533c668059d1acfcf5da53d517f2d46', 'enabled', 'administrator');
-
+            
+            // check duplicate username
+            if (OracleHelpers.IsRowExistInColumnInTableName(conn, username, "SPATIAL_ADMIN.EARTHFUSION_USERS", "user_name"))
+            {
+                return false;
+            }
+            // generate uuid
+            int uuid = 0;
+            Random random = new System.Random();
+            while (true)
+            {
+                uuid = random.Next(2, 114514);
+                // tests proved that we can use string to query int
+                if (!OracleHelpers.IsRowExistInColumnInTableName(conn, uuid.ToString(), "SPATIAL_ADMIN.EARTHFUSION_USERS", "user_id"))
+                {
+                    break;
+                }
+            }
+            string hashedUserPassword = GenericHelpers.ComputeSha256Hash(password);
+            string insertString = "insert into earthfusion_users ";
+            insertString += "(user_id, user_name, user_email, USER_PASSWORD_HASHED, USER_STATUS, USER_ROLE) ";
+            insertString += "values ";
+            insertString += "(";
+            insertString += uuid.ToString();
+            insertString += ", '";
+            insertString += username;
+            insertString += "', '";
+            insertString += emailAddress;
+            insertString += "', '";
+            insertString += hashedUserPassword;
+            insertString += "', '";
+            insertString += "enabled";
+            insertString += "', '";
+            insertString += "user";
+            insertString += "')";
+            OracleCommand command = new OracleCommand(insertString, conn);
+            conn.Open();
+            OracleDataReader reader = command.ExecuteReader();
+            conn.Close();
             return true;
         }
 
