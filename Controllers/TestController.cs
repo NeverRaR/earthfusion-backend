@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Utils;
+using EarthFusion;
 
 namespace Test.Controllers
 {
@@ -181,11 +182,11 @@ namespace Test.Controllers
             GenericTestResult httpResponse = new GenericTestResult();
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
-            httpResponse.Operation = "Client request for a verifaction code check";
+            httpResponse.Operation = "Client request for a verification code check";
             bool test = SessionHelpers.CompareVerificationCode(emailAddress, verificationCodeToCheck);
             if (!test)
             {
-                httpResponse.Message = "The code maybe wrong.";
+                httpResponse.Message = "The code is wrong.";
             }
             else
             {
