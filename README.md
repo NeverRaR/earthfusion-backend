@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/xiongnemo/earthfusion-backend.svg?token=eVKLnmA7cJigiwqAoaHv&branch=master)](https://travis-ci.com/xiongnemo/earthfusion-backend)
 [![CodeFactor](https://www.codefactor.io/repository/github/xiongnemo/earthfusion-backend/badge?s=1af991d5c9acc63fe503f7d96cfbbf5a3c5f048c)](https://www.codefactor.io/repository/github/xiongnemo/earthfusion-backend)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxiongnemo%2Fearthfusion-backend.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxiongnemo%2Fearthfusion-backend.svg?ref=badge_shield)
 
 CSharp webapi for EarthFusion, project of Database course design, Tongji SSE, Jul 2020
 
