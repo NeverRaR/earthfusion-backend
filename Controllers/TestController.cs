@@ -172,6 +172,7 @@ namespace Test.Controllers
                 }
                 httpResponse.BoolResult = test;
             }
+            this.HttpContext.Response.StatusCode = statusCode;
             httpResponse.StatusCode = statusCode;
             return httpResponse;
         }
@@ -193,6 +194,7 @@ namespace Test.Controllers
                 httpResponse.Message = "The code is ok.";
             }
             httpResponse.BoolResult = test;
+            this.HttpContext.Response.StatusCode = statusCode;
             httpResponse.StatusCode = statusCode;
             return httpResponse;
         }

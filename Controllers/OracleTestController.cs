@@ -91,7 +91,6 @@ namespace OracleTest.Controllers
                 result = new List<WktWithName>();
             }
             Logging.Info("PullFromTableWithNum", "Pulling process ends.");
-            this.HttpContext.Response.StatusCode = statusCode;
 
             // constructs content
             foreach (WktWithName content in result)
@@ -119,6 +118,7 @@ namespace OracleTest.Controllers
 
             httpResponse.Message = message;
             httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
             Logging.Info("request", "Reponse returned for PullFromTableWithNum");
             return httpResponse;
         }
