@@ -15,6 +15,10 @@ dotnet add package StackExchange.Redis --version 2.1.58
 dotnet add package LettuceEncrypt --version 1.0.0 # if you want to automatically obtain Let's Encrypt's certs
 ```
 
+## Setup
+
+Put your https certificate(certificate.pfx) under project root.
+
 ## Run
 
 ```bash
