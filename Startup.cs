@@ -42,7 +42,7 @@ namespace earthfusion_backend
             });
             services.AddHttpsRedirection(options =>
             {
-                options.RedirectStatusCode = (int)HttpStatusCode.TemporaryRedirect;
+                options.RedirectStatusCode = (int)HttpStatusCode.RedirectKeepVerb;
                 options.HttpsPort = 5001;
             });
         }
@@ -55,7 +55,7 @@ namespace earthfusion_backend
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
 
