@@ -93,5 +93,69 @@ namespace Utils
             conn.Close();
             return contents;
         }
+          public static List<WktWithName> NameSearchTest(string username, string passwd, string tableName, string nameOfPlace)
+        {
+            // conn to use
+            OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
+
+            // List to return
+            List<WktWithName> contents = new List<WktWithName>();
+
+
+            // has geom?
+            bool hasGeom = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "GEOM".ToString());
+            bool hasName = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "NAME".ToString());
+            if (!hasGeom||!hasName)
+            {
+                return contents;
+            }
+            string  testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where NAME like '%" + nameOfPlace + "%'").ToString();
+            Logging.Info("NameSearchTest", "Constructed query: " + testQueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(testQueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                while (reader.Read())
+                {
+                    // Console.WriteLine(reader.GetString(0));
+                    string wkt = reader.GetString(0);
+                    string name = null;
+                    // some data still has null string even there is name column
+                    // also, this proves to be useful when we didn't select name from the table.
+                    try
+                    {
+                        name = reader.GetString(1);
+                    }
+                    catch (System.InvalidCastException e)
+                    {
+                        Logging.Warning("WktPullTest", "Experienced an InvalidCastException");
+                        if (e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault() == "System.InvalidCastException: Column contains NULL data")
+                        {
+                            Logging.Warning("WktPullTest", "Experienced a null string");
+                        }
+                        name = null;
+                    }
+                    WktWithName temp = new WktWithName();
+                    temp.wkt = wkt;
+                    temp.name = name;
+                    contents.Add(temp);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return contents;
+        }
+    }
     }
 }
