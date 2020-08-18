@@ -19,6 +19,23 @@ dotnet add package LettuceEncrypt --version 1.0.0 # if you want to automatically
 
 Put your https certificate(certificate.pfx) under project root.
 
+Consult your DB Administrator for DB conference.
+
+I assume your spatial admin's account is `spatial_admin`, and your geom data is in `nemo`'s schema.
+
+```sql
+CREATE TABLE earthfusion_users(
+            user_id NUMBER,
+            user_name VARCHAR2(50),
+            user_email VARCHAR2(50),
+            user_password_hashed VARCHAR2(66),
+            user_status VARCHAR2(50),
+            user_role VARCHAR2(50),
+            PRIMARY KEY(user_id)
+            );
+```
+
+
 ## Run
 
 ```bash
