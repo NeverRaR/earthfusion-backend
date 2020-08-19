@@ -3,3 +3,4 @@
 /obj/Debug
 *.sh
 certificate.pfx
+config.ini
