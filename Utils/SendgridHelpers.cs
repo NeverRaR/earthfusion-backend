@@ -16,7 +16,7 @@ namespace Utils
 
         private static async Task Test(string receiver)
         {
-            var apiKey = Environment.GetEnvironmentVariable("EARTH_FUSION_EMAIL_API_KEY");
+            var apiKey = earthfusion_backend.Globals.config["EARTH_FUSION_EMAIL_API_KEY"];
             var client = new SendGridClient(apiKey);
             var from = new EmailAddress("earth-fusion@anzupop.com", "Developers");
             var subject = "Hello from Earth Fusion";
@@ -34,7 +34,7 @@ namespace Utils
 
         private static async Task SendWithVerificationTemplate(string receiver, string nickname, string verificationCodeString)
         {
-            var apiKey = Environment.GetEnvironmentVariable("EARTH_FUSION_EMAIL_API_KEY");
+            var apiKey = earthfusion_backend.Globals.config["EARTH_FUSION_EMAIL_API_KEY"];
             var client = new SendGridClient(apiKey);
             var from = new EmailAddress("earth-fusion@anzupop.com", "Administrators");
             var subject = "Your Earth Fusion verification code";

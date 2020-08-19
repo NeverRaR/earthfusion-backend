@@ -38,12 +38,31 @@ CREATE TABLE earthfusion_users(
 
 ## Run
 
+Firstly, create an `ini` file under project root.
+
+Contents for `config.ini`:
+
+```ini
+EARTH_FUSION_EMAIL_API_KEY=***
+EARTH_FUSION_SPATIAL_DB_USERNAME=***
+EARTH_FUSION_SPATIAL_DB_PASSWORD=***
+EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME=***
+EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD=***
+```
+
+Build and run:
+
 ```bash
-export EARTH_FUSION_EMAIL_API_KEY="***" # Sendgrid API Key
-export EARTH_FUSION_SPATIAL_DB_USERNAME="***" # Oracle
-export EARTH_FUSION_SPATIAL_DB_PASSWORD="***" # Oracle
-export EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME="***" # Oracle
-export EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD="***" # Oracle
+#!/bin/bash
+#
+# no longer need this as we has ini config
+# export EARTH_FUSION_EMAIL_API_KEY="***" # Sendgrid API Key
+# export EARTH_FUSION_SPATIAL_DB_USERNAME="***" # Oracle
+# export EARTH_FUSION_SPATIAL_DB_PASSWORD="***" # Oracle
+# export EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME="***" # Oracle
+# export EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD="***" # Oracle
+# 
+cp ./config.ini ./bin/Debug/netcoreapp3.1/
 dotnet build
 ./bin/Debug/netcoreapp3.1/earthfusion-backend
 ```
@@ -51,10 +70,6 @@ dotnet build
 * It's recommended to create a script.
 
 ## Dev Logs
-
-### 2020/7/12
-
-- [X] Pull first *** wkt rows with given TableName.
 
 ### 2020/7/21
 
@@ -64,6 +79,6 @@ dotnet build
 
 - [X] Response compression, enabled over HTTPS: [source](https://docs.microsoft.com/en-us/aspnet/core/performance/response-compression?view=aspnetcore-3.1)
 
-Todo:
+### 2020/8/19
 
-- [ ] Use config file for auto configuration.
+- [X] Use ini file for config

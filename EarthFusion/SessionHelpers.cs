@@ -62,8 +62,8 @@ namespace EarthFusion
             // user_password_hashed: hashed password. SHA256 only.
             // user_status: is the user enabled? "enabled"/"disabled"
             // user_role: administrator/user
-            string oracleSpatialAdminUsername = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME");
-            string oracleSpatialAdminPassword = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD");
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             
             // currently the frontend register without email address
@@ -122,8 +122,8 @@ namespace EarthFusion
 
         public static UserInformation Login(string username, string password)
         {
-            string oracleUsername = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_DB_USERNAME");
-            string oraclePassword = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_DB_PASSWORD");
+            string oracleUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_USERNAME"];
+            string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
             // Get user information
             List<UserInformation> selectedResult = GetUserInformation(conn, username);
@@ -223,8 +223,8 @@ namespace EarthFusion
 
         public static UserInformation Validate(string sessionId)
         {
-            string oracleUsername = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_DB_USERNAME");
-            string oraclePassword = Environment.GetEnvironmentVariable("EARTH_FUSION_SPATIAL_DB_PASSWORD");
+            string oracleUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_USERNAME"];
+            string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
             return ValidateSession(conn, sessionId);
         }
