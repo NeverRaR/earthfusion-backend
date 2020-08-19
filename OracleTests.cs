@@ -157,5 +157,4 @@ namespace Utils
             return contents;
         }
     }
-    }
 }
