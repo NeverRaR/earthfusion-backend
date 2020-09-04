@@ -18,7 +18,9 @@ namespace EarthFusion.Controllers
     public class EarthFusionController : ControllerBase
     {
         [HttpGet]
-        public Session Login(string username, string password)
+        // public Session Login(string username, string password)
+        public Session GetLoginSession(string username, string password)
+
         {
             Session httpResponse = new Session();
             Logging.Info("request", "Received request for GetLoginSession");
@@ -69,7 +71,8 @@ namespace EarthFusion.Controllers
         }
 
         [HttpGet]
-        public UserInformationHttp Session(string sessionId)
+        // public UserInformationHttp Session(string sessionId)
+        public UserInformationHttp GetSession(string sessionId)
         {
             UserInformationHttp httpResponse = new UserInformationHttp();
             Logging.Info("request", "Received request for GetSession");
@@ -95,7 +98,8 @@ namespace EarthFusion.Controllers
         }
 
         [HttpPost]
-        public RegisterResult Register(string username, string password)
+        // public RegisterResult Register(string username, string password)
+        public RegisterResult RegisterAccount(string username, string password)
         {
             RegisterResult httpResponse = new RegisterResult();
             httpResponse.Date = DateTime.Now;
@@ -130,7 +134,8 @@ namespace EarthFusion.Controllers
         }
 
         [HttpPost]
-        public RegisterResult RegisterAlt(RegisterRequest httpRequest)
+        // public RegisterResult RegisterAlt(RegisterRequest httpRequest)
+        public RegisterResult RegisterAccountAlt(RegisterRequest httpRequest)
         {
             string username = httpRequest.Username;
             string password = httpRequest.Password;
