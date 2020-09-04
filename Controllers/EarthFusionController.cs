@@ -26,7 +26,15 @@ namespace EarthFusion.Controllers
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
             Logging.Info("GetLoginSession", "Begins.");
-            UserInformation userInformation = SessionHelpers.Login(username, password);
+            if (username == null || password == null)
+            {
+                httpResponse.Message = "Login failed. Something you provided is null.";
+                Logging.Info("GetLoginSession", httpResponse.Message);
+                statusCode = (int)HttpStatusCode.InternalServerError;
+            }
+            else
+            {
+                UserInformation userInformation = SessionHelpers.Login(username, password);
             if (userInformation == null)
             {
                 statusCode = (int)HttpStatusCode.Forbidden;
@@ -40,17 +48,19 @@ namespace EarthFusion.Controllers
                 string sessionId;
                 while (true)
                 {
-                    sessionId = GenericHelpers.CreateMD5(random.Next(114514, 1919810).ToString());
+                    // fake SHA1
+                    sessionId = GenericHelpers.GetRandomHexNumber(40);
                     string sessionKeyName = "EARTH_FUSION_SESSION_" + sessionId;
                     if (RedisHelpers.GetString(sessionKeyName) == null)
                     {
                         RedisHelpers.SetString(sessionKeyName, userInformation.userId.ToString());
-                        // three hour
+                        // expire time: three hour
                         RedisHelpers.SetKeyExpireTime(sessionKeyName, 3 * 60 * 60);
                         break;
                     }
                 }
                 httpResponse.sessionId = sessionId;
+            }
             }
             httpResponse.StatusCode = statusCode;
             this.HttpContext.Response.StatusCode = statusCode;
