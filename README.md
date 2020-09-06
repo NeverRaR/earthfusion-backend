@@ -69,7 +69,7 @@ dotnet build
 ./bin/Debug/netcoreapp3.1/earthfusion-backend
 ```
 
-* It's recommended to create a script. (Starts from 2020/9/6, the script is included.)
+* It's recommended to create a script.
 
 ## Remote control over HTTPS
 
