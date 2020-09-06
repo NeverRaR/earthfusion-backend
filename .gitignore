@@ -1,6 +1,9 @@
 /bin/
 /.vscode
 /obj/
+/logs/
 *.sh
 certificate.pfx
+fullchain.pem
+privkey.pem
 config.ini

@@ -69,7 +69,15 @@ dotnet build
 ./bin/Debug/netcoreapp3.1/earthfusion-backend
 ```
 
-* It's recommended to create a script.
+* It's recommended to create a script. (Starts from 2020/9/6, the script is included.)
+
+## Remote control over HTTPS
+
+```bash
+python3 ./web_deployment.py
+```
+
+Make sure to put an `rebuild_and_start.sh` under project root.
 
 ## Dev Logs
 
