@@ -77,6 +77,12 @@ dotnet build
 python3 ./web_deployment.py
 ```
 
+API Endpoint:
+
+```url
+https://[your_machine]:6000/api/earthfusion_ctl/stop_pull_start
+```
+
 Make sure to put an `rebuild_and_start.sh` under project root.
 
 ## Dev Logs
