@@ -1,3 +1,9 @@
+//-----------------------------------------------------------------------
+// <copyright file="GeometryDataTypes.cs" company="Anzupop">
+//     2020 EarthFusion Developers
+// </copyright>
+//-----------------------------------------------------------------------
+
 namespace GeometryDataTypes
 {
     /// <summary>
