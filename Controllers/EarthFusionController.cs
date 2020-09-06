@@ -10,9 +10,12 @@ using Utils;
 using Oracle.ManagedDataAccess.Client;
 using OracleTest;
 
+// Disable ArithmeticExpressionsMustDeclarePrecedence in this file.
+// Sometimes those things get so stupid...
+#pragma warning disable SA1407 
+
 namespace EarthFusion.Controllers
 {
-    //路由设置
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class EarthFusionController : ControllerBase
@@ -20,7 +23,6 @@ namespace EarthFusion.Controllers
         [HttpGet]
         // public Session Login(string username, string password)
         public Session GetLoginSession(string username, string password)
-
         {
             Session httpResponse = new Session();
             Logging.Info("request", "Received request for GetLoginSession");
