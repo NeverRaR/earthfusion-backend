@@ -1,5 +1,8 @@
 namespace GeometryDataTypes
 {
+    /// <summary>
+    /// Types of GeometryData.
+    /// </summary>
     public enum GeometryDataType
     {
         // This table does not contain geometry data(geom column).
@@ -11,6 +14,10 @@ namespace GeometryDataTypes
         // This table contains geometry data(geom column), and it's about an entity.
         Entity = 2
     }
+
+    /// <summary>
+    /// Types of GeometryData, whether it's line or boundary.
+    /// </summary>
     public enum LineOrBoundaryType
     {
         // This is not a line or boundary data.
@@ -37,6 +44,10 @@ namespace GeometryDataTypes
         // Maybe the route of public transportation
         PublicTransportationLine = 9
     }
+
+    /// <summary>
+    /// Types of GeometryData, whether it's an entity.
+    /// </summary>
     public enum EntityType
     {
         // This is not an entity data.
