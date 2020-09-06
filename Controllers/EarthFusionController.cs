@@ -10,10 +10,6 @@ using Utils;
 using Oracle.ManagedDataAccess.Client;
 using OracleTest;
 
-// Disable ArithmeticExpressionsMustDeclarePrecedence in this file.
-// Sometimes those things get so stupid...
-#pragma warning disable SA1407 
-
 namespace EarthFusion.Controllers
 {
     [Route("api/[controller]/[action]")]
