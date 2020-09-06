@@ -6,8 +6,8 @@ namespace earthfusion_backend
     {
         // where should the application listen on?
         public static string[] listenUrls = new string[]{
-            "http://*:5000".ToString(),
-            "https://*:5001".ToString()
+            "http://*:".ToString() + Globals.httpListenPort.ToString(),
+            "https://*:".ToString() + Globals.httpsListenPort.ToString()
         };
         public static IPAddress allIpv4 = IPAddress.Parse("0.0.0.0");
     }
