@@ -84,3 +84,7 @@ dotnet build
 ### 2020/8/19
 
 - [X] Use ini file for config
+
+### 2020/9/6
+
+- [X] Remote control over HTTPS
