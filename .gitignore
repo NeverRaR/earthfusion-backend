@@ -1,6 +1,6 @@
-/bin
+/bin/
 /.vscode
-/obj/Debug
+/obj/
 *.sh
 certificate.pfx
 config.ini
