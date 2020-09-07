@@ -3,10 +3,13 @@ import sys
 import subprocess, signal
 from subprocess import Popen
 import os
+from gevent.pywsgi import WSGIServer
+import json
 
 app = Flask(__name__)
 
 def _kill_earthfusion():
+    print("Killing application...")
     p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
     out, err = p.communicate()
     out_utf_8 = out.decode('utf-8')
@@ -19,6 +22,7 @@ def _kill_earthfusion():
 
 
 def _start_earthfusion():
+    print("Pulling git repo......")
     command_pre = ['/usr/bin/git', 'pull']
     job_pre = Popen(command_pre)
     output_pre = job_pre.communicate()
@@ -60,4 +64,15 @@ def stop_pull_start_earthfusion():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=6000, ssl_context=("fullchain.pem", "privkey.pem"))
+    port_num = 6000
+    try:
+        with open('remote_web_deployment_config.json') as json_file:
+            json_data = json.loads(json_file)
+        port_num = json_data['earthfusion']['remote_web_deployment']['port_num']
+    except:
+        print("Config file not found. Fallback to default.")
+    print("Listening on port " + str(port_num))
+    _stop_pull_start_earthfusion()
+    https_server = WSGIServer(('', port_num), app, keyfile='privkey.pem', certfile='fullchain.pem')
+    https_server.serve_forever()
+    # app.run(host='0.0.0.0', port=6000, ssl_context=("fullchain.pem", "privkey.pem"))

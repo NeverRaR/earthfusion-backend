@@ -73,14 +73,28 @@ dotnet build
 
 ## Remote control over HTTPS
 
+Create a `remote_web_deployment_config.json` file for self defined port number to listen on.
+
+```json
+{
+    "earthfusion": {
+        "remote_web_deployment": {
+            "port_num": ****
+        }
+    }
+}
+```
+
+By default(no config file present), it listens on `6000`.
+
 ```bash
-python3 ./web_deployment.py
+python3 ./remote_web_deployment.py
 ```
 
 API Endpoint:
 
 ```url
-https://[your_machine]:6000/api/earthfusion_ctl/stop_pull_start
+https://[your_machine]:[port_num]/api/earthfusion_ctl/stop_pull_start
 ```
 
 Make sure to put an `rebuild_and_start.sh` under project root.
@@ -101,4 +115,4 @@ Make sure to put an `rebuild_and_start.sh` under project root.
 
 ### 2020/9/6
 
-- [X] Remote control over HTTPS
+- [X] Remote control and deploy over HTTPS
