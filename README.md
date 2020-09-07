@@ -71,7 +71,9 @@ dotnet build
 
 * It's recommended to create a script.
 
-## Remote control over HTTPS
+## Remote control / deploy over HTTPS
+
+### Config
 
 Create a `remote_web_deployment_config.json` file for self defined port number to listen on.
 
@@ -85,19 +87,27 @@ Create a `remote_web_deployment_config.json` file for self defined port number t
 }
 ```
 
+### Prerequisites
+
+```bash
+pip3 install flask gevent
+```
+
+### Run
+
 By default(no config file present), it listens on `6000`.
+
+Make sure to put an `rebuild_and_start.sh` under project root.
 
 ```bash
 python3 ./remote_web_deployment.py
 ```
 
-API Endpoint:
+### API Endpoint:
 
 ```url
 https://[your_machine]:[port_num]/api/earthfusion_ctl/stop_pull_start
 ```
-
-Make sure to put an `rebuild_and_start.sh` under project root.
 
 ## Dev Logs
 
