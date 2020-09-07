@@ -17,6 +17,7 @@ def _kill_earthfusion():
             return "successfully killed"
     return "nothing here"
 
+
 def _start_earthfusion():
     command_pre = ['/usr/bin/git', 'pull']
     job_pre = Popen(command_pre)
@@ -30,6 +31,7 @@ def _start_earthfusion():
     else:
         return "bad"
     return "what"
+
 
 def _stop_pull_start_earthfusion():
     line_1 = _kill_earthfusion()
