@@ -23,10 +23,14 @@ idiot_status_code = [
 global earthfusion_pid
 earthfusion_pid = 114514
 
+global earthfusion_process
+earthfusion_process = None
+
 app = Flask(__name__)
 
 
 def _kill_earthfusion():
+    global earthfusion_process
     global earthfusion_pid
     print("Killing application...")
     p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
@@ -37,13 +41,23 @@ def _kill_earthfusion():
     #         pid = int(line.split(None, 1)[0])
     #         os.kill(pid, signal.SIGTERM)
     #         return "successfully killed"
+    # if earthfusion_pid != 114514:
+    #     os.kill(earthfusion_pid, signal.SIGTERM)
+    #     earthfusion_pid = 114514
+    #     return "successfully killed"
+    # if earthfusion_process:
+    #     earthfusion_process.terminate()
+    #     return "successfully killed"
     if earthfusion_pid != 114514:
-        os.kill(earthfusion_pid, signal.SIGTERM)
+        # pkill -P
+        kill_command = ['/usr/bin/pkill', '-P', str(earthfusion_pid)]
+        job_kill = Popen(kill_command)
         earthfusion_pid = 114514
     return "nothing here"
 
 
 def _start_earthfusion():
+    global earthfusion_process
     global earthfusion_pid
     print("Pulling git repo......")
     command_pre = ['/usr/bin/git', 'pull']
@@ -53,6 +67,7 @@ def _start_earthfusion():
     command = ['/bin/bash', './rebuild_and_start.sh']
     job = Popen(command)
     earthfusion_pid = job.pid
+    earthfusion_process = job
     print(job)
     if job:
         return "looks good"
