@@ -53,8 +53,7 @@ def _start_earthfusion():
     print(job)
     if job:
         return "looks good"
-    else:
-        return "bad"
+    return "bad"
 
 
 def _stop_pull_start_earthfusion():
@@ -94,7 +93,7 @@ if __name__ == '__main__':
         with open('remote_web_deployment_config.json') as json_file:
             json_data = json.load(json_file)
         port_num = json_data['earthfusion']['remote_web_deployment']['port_num']
-    except:
+    except FileNotFoundError:
         print("Config file not found. Fallback to default.")
     print("Listening on port " + str(port_num))
     _start_earthfusion()
