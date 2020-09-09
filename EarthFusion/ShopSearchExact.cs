@@ -18,7 +18,7 @@ namespace EarthFusion
             // List to return
             List<ShopSearchResult> contents = new List<ShopSearchResult>();
 
-            string testQueryString = "SELECT DISTINCT name, address, lat, lon, area, detail from nemo.SHANGHAI_SHOPS where name LIKE '%" + query + "%'";
+            string testQueryString = "SELECT DISTINCT name, address, lat, lon, area, detail from nemo.SHANGHAI_SHOPS where lower(name) LIKE '%" + query.ToLower() + "%'";
 
             Logging.Info("ShopSearchExact.Search", "Constructed query: " + testQueryString);
 
