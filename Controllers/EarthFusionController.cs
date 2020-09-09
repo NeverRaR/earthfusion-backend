@@ -316,5 +316,30 @@ namespace EarthFusion.Controllers
             result.allReports.Add(tag);
             return result;
         }
+
+        [HttpGet]
+        public ShopSearchResponse SearchShopByExactName(string sessionId, string query)
+        {
+            ShopSearchResponse httpResponse = new ShopSearchResponse();
+            Logging.Info("request", "Received request for ShopSearchExact");
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            UserInformation currentUser = SessionHelpers.Validate(sessionId);
+            if (currentUser == null)
+            {
+                httpResponse.Message = "No such user.";
+                statusCode = (int)HttpStatusCode.Forbidden;
+            }
+            else
+            {
+                httpResponse.Message = "Okay..";
+                List<ShopSearchResult> result = ShopSearchExact.Search(query);
+                httpResponse.Contents = result;
+            }
+            httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
+            Logging.Info("request", "Reponse returned for ShopSearchExact");
+            return httpResponse;
+        }
     }
 }
