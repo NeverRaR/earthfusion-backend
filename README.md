@@ -52,18 +52,13 @@ EARTH_FUSION_LISTEN_HTTP_PORT=5000
 EARTH_FUSION_LISTEN_HTTPS_PORT=5001
 ```
 
+Ensure `logs/` are present in your project structure. It's used for logging.
+
 Build and run:
 
 ```bash
 #!/bin/bash
-#
-# no longer need this as we has ini config
-# export EARTH_FUSION_EMAIL_API_KEY="***" # Sendgrid API Key
-# export EARTH_FUSION_SPATIAL_DB_USERNAME="***" # Oracle
-# export EARTH_FUSION_SPATIAL_DB_PASSWORD="***" # Oracle
-# export EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME="***" # Oracle
-# export EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD="***" # Oracle
-# 
+mkdir logs # for logging
 cp ./config.ini ./bin/Debug/netcoreapp3.1/
 dotnet build
 ./bin/Debug/netcoreapp3.1/earthfusion-backend
