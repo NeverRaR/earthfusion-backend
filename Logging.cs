@@ -33,7 +33,7 @@ namespace Utils
             string timeString = now.ToString("MM/dd/yyyy hh:mm:ss.fff tt");
             string realMessage = "[Info]   " + "[" + timeString + "] " + caller + ": " + message;
             Console.WriteLine(realMessage);
-            using (StreamWriter writer = new StreamWriter(logPath + appStartTimeString + logNameExtension))
+            using (StreamWriter writer = File.AppendText(logPath + appStartTimeString + logNameExtension))
             {
                 writer.WriteLine(realMessage);
             }
@@ -45,7 +45,7 @@ namespace Utils
             Console.ForegroundColor = ConsoleColor.Yellow;
             string realMessage = "[Warning]" + "[" + timeString + "] " + caller + ": " + message;
             Console.WriteLine(realMessage);
-            using (StreamWriter writer = new StreamWriter(logPath + appStartTimeString + logNameExtension))
+            using (StreamWriter writer = File.AppendText(logPath + appStartTimeString + logNameExtension))
             {
                 writer.WriteLine(realMessage);
             }
