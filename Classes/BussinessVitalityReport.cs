@@ -9,12 +9,13 @@ namespace EarthFusion
         public int reportId { get; set; }
         public double ulLongitude { get; set; }
         public double ulLatitude { get; set; }
-        public double ldLongitude { get; set; }
-        public double ldLatitude { get; set; }
+        public double lrLongitude { get; set; }
+        public double lrLatitude { get; set; }
         public DateTime date { get; set; }
         public int rowNum { get; set; }
         public int colNum { get; set; }
         public String trafficAccessibility  { get; set; }
+        public String busAccessibility  { get; set; }
         public String competitiveness  { get; set; }
     }
 }

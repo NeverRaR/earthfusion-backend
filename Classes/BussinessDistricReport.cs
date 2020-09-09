@@ -11,6 +11,7 @@ namespace EarthFusion
         public double latitude { get; set; }
         public DateTime date { get; set; }
         public int trafficAccessibility  { get; set; }
+        public int busAccessibility  { get; set; }
         public int  competitiveness  { get; set; }
     }
 }
