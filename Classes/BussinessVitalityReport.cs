@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 namespace EarthFusion
 {
-
     public class BussinessVitalityReport
     {
         public int userId { get; set; }
