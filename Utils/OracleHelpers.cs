@@ -42,7 +42,7 @@ namespace Utils
             {
                 logMessage += ", WITHOUT privilege.";
             }
-            Logging.Info("OracleHelpers.GetOracleConnection",  logMessage);
+            Logging.Info("OracleHelpers.GetOracleConnection", logMessage);
             return conn;
         }
 
@@ -90,7 +90,7 @@ namespace Utils
 
         public static bool IsRowExistInColumnInTableName(OracleConnection conn, string query, string tableName, string columnName)
         {
-            string testQueryString= "select count(*) from " + tableName + " where " + columnName + " = '" + query + "'";
+            string testQueryString = "select count(*) from " + tableName + " where " + columnName + " = '" + query + "'";
             OracleCommand command = new OracleCommand(testQueryString, conn);
             conn.Open();
             OracleDataReader reader = command.ExecuteReader();
@@ -99,7 +99,7 @@ namespace Utils
             {
                 while (reader.Read())
                 {
-                   result = reader.GetInt32(0);
+                    result = reader.GetInt32(0);
                 }
             }
             finally
@@ -114,21 +114,22 @@ namespace Utils
             conn.Close();
             return false;
         }
-        public static int CompetitivenessRegionQuery(double ullog,double ullat,double lrlog,double lrlat)
+
+        public static int CompetitivenessRegionQuery(double ullog, double ullat, double lrlog, double lrlat)
         {
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select count(*)"
-                                +"from nemo.SHANGHAI_SHOPS a "
-                                +"where MDSYS.sdo_filter(a.geom,SDO_GEOMETRY("
-                                +"2003,"
-                                +"4326,"
-                                +"NULL,"
-                                +"SDO_ELEM_INFO_ARRAY(1,1003,3),"
-                                +"SDO_ORDINATE_ARRAY("+ullog+" , "+ lrlat +","+lrlog+" , "+ullat+")"
-                                +")"
-                                +")='TRUE'";
+                                + "from nemo.SHANGHAI_SHOPS a "
+                                + "where MDSYS.sdo_filter(a.geom,SDO_GEOMETRY("
+                                + "2003,"
+                                + "4326,"
+                                + "NULL,"
+                                + "SDO_ELEM_INFO_ARRAY(1,1003,3),"
+                                + "SDO_ORDINATE_ARRAY(" + ullog + " , " + lrlat + "," + lrlog + " , " + ullat + ")"
+                                + ")"
+                                + ")='TRUE'";
             Logging.Info("CompetitivenessRegionQuery", "Constructed query: " + QueryString);
 
             // constructs command from string
@@ -139,19 +140,19 @@ namespace Utils
 
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            int ans=0;
-            if(reader.RowSize==0)
+            int ans = 0;
+            if (reader.RowSize == 0)
             {
                 conn.Close();
                 return -1;
             }
             try
             {
-                
-               if(reader.Read())
-               {
-                   ans=reader.GetInt32(0);
-               }
+
+                if (reader.Read())
+                {
+                    ans = reader.GetInt32(0);
+                }
 
             }
             finally
@@ -169,6 +170,7 @@ namespace Utils
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select count(*)"
+
                                 +"from nemo.SHANGHAI_SHOPS a "
                                 +"where MDSYS.SDO_WITHIN_DISTANCE(a.geom,SDO_GEOMETRY("
                                 +"2001,"
@@ -189,19 +191,19 @@ namespace Utils
 
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            int ans=0;
-            if(reader.RowSize==0)
+            int ans = 0;
+            if (reader.RowSize == 0)
             {
                 conn.Close();
                 return -1;
             }
             try
             {
-                
-               if(reader.Read())
-               {
-                   ans=reader.GetInt32(0);
-               }
+
+                if (reader.Read())
+                {
+                    ans = reader.GetInt32(0);
+                }
 
             }
             finally
@@ -211,23 +213,23 @@ namespace Utils
             }
             conn.Close();
             return ans;
-        
+
         }
-        public static int TrafficAccessibilityRegionQuery(double ullog,double ullat,double lrlog,double lrlat)
+        public static int TrafficAccessibilityRegionQuery(double ullog, double ullat, double lrlog, double lrlat)
         {
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select count(*)"
-                                +"from nemo.SHANGHAI_ROAD_NETWORK a "
-                                +"where MDSYS.sdo_filter(a.geom,SDO_GEOMETRY("
-                                +"2003,"
-                                +"4326,"
-                                +"NULL,"
-                                +"SDO_ELEM_INFO_ARRAY(1,1003,3),"
-                                +"SDO_ORDINATE_ARRAY("+ullog+" , "+ lrlat +","+lrlog+" , "+ullat+")"
-                                +")"
-                                +")='TRUE'";
+                                + "from nemo.SHANGHAI_ROAD_NETWORK a "
+                                + "where MDSYS.sdo_filter(a.geom,SDO_GEOMETRY("
+                                + "2003,"
+                                + "4326,"
+                                + "NULL,"
+                                + "SDO_ELEM_INFO_ARRAY(1,1003,3),"
+                                + "SDO_ORDINATE_ARRAY(" + ullog + " , " + lrlat + "," + lrlog + " , " + ullat + ")"
+                                + ")"
+                                + ")='TRUE'";
             Logging.Info("TrafficAccessibilityRegionQuery", "Constructed query: " + QueryString);
 
             // constructs command from string
@@ -238,19 +240,19 @@ namespace Utils
 
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            int ans=0;
-            if(reader.RowSize==0)
+            int ans = 0;
+            if (reader.RowSize == 0)
             {
                 conn.Close();
                 return -1;
             }
             try
             {
-                
-               if(reader.Read())
-               {
-                   ans=reader.GetInt32(0);
-               }
+
+                if (reader.Read())
+                {
+                    ans = reader.GetInt32(0);
+                }
 
             }
             finally
@@ -260,8 +262,9 @@ namespace Utils
             }
             conn.Close();
             return ans;
-        
+
         }
+
         
 
           public static int BusAccessibilityRegionQuery(double ullog,double ullat,double lrlog,double lrlat)
@@ -313,22 +316,23 @@ namespace Utils
             return ans;
         
         }
-         public static int TrafficAccessibilityPointQuery(double log,double lat,float dis)
+
+        public static int TrafficAccessibilityPointQuery(double log, double lat, float dis)
         {
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select count(*)"
-                                +"from nemo.SHANGHAI_ROAD_NETWORK a "
-                                +"where MDSYS.SDO_WITHIN_DISTANCE(a.geom,SDO_GEOMETRY("
-                                +"2001,"
-                                +"4326,"
-                                +"SDO_POINT_TYPE("+log+","+lat+",NULL),"
-                                +"NULL,"
-                                +"NULL"
-                                +"),"
-                                +"'DISTANCE="+dis+" UNIT=M'"
-                                +")='TRUE'";
+                                + "from nemo.SHANGHAI_ROAD_NETWORK a "
+                                + "where MDSYS.SDO_WITHIN_DISTANCE(a.geom,SDO_GEOMETRY("
+                                + "2001,"
+                                + "4326,"
+                                + "SDO_POINT_TYPE(" + log + "," + lat + ",NULL),"
+                                + "NULL,"
+                                + "NULL"
+                                + "),"
+                                + "'DISTANCE=" + dis + " UNIT=M'"
+                                + ")='TRUE'";
             Logging.Info("TrafficAccessibilityPointQuery", "Constructed query: " + QueryString);
 
             // constructs command from string
@@ -339,19 +343,19 @@ namespace Utils
 
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            int ans=0;
-            if(reader.RowSize==0)
+            int ans = 0;
+            if (reader.RowSize == 0)
             {
                 conn.Close();
                 return -1;
             }
             try
             {
-                
-               if(reader.Read())
-               {
-                   ans=reader.GetInt32(0);
-               }
+
+                if (reader.Read())
+                {
+                    ans = reader.GetInt32(0);
+                }
 
             }
             finally
@@ -361,7 +365,6 @@ namespace Utils
             }
             conn.Close();
             return ans;
-        
         }
 
             public static int BusAccessibilityPointQuery(double log,double lat,double dis)

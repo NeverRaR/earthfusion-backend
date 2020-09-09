@@ -43,7 +43,7 @@ namespace earthfusion_backend
             services.AddHttpsRedirection(options =>
             {
                 options.RedirectStatusCode = (int)HttpStatusCode.RedirectKeepVerb;
-                options.HttpsPort = 5001;
+                options.HttpsPort = Globals.httpsListenPort;
             });
         }
 

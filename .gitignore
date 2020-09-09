@@ -1,6 +1,10 @@
-/bin
+/bin/
 /.vscode
-/obj/Debug
+/obj/
+/logs/
 *.sh
 certificate.pfx
+fullchain.pem
+privkey.pem
 config.ini
+remote_web_deployment_config.json

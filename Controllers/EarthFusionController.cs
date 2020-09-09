@@ -12,45 +12,55 @@ using OracleTest;
 
 namespace EarthFusion.Controllers
 {
-    //路由设置
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class EarthFusionController : ControllerBase
     {
         [HttpGet]
+        // public Session Login(string username, string password)
         public Session GetLoginSession(string username, string password)
         {
             Session httpResponse = new Session();
             Logging.Info("request", "Received request for GetLoginSession");
-            Logging.Info("GetLoginSession", "username: " + username);
+            Logging.Info("Login(GetLoginSession)", "username: " + username);
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
-            Logging.Info("GetLoginSession", "Begins.");
-            UserInformation userInformation = SessionHelpers.Login(username, password);
-            if (userInformation == null)
+            Logging.Info("Login(GetLoginSession)", "Begins.");
+            if (username == null || password == null)
             {
-                statusCode = (int)HttpStatusCode.Forbidden;
-                httpResponse.Message = "boom";
+                httpResponse.Message = "Login failed. Something you provided is null.";
+                Logging.Info("Login(GetLoginSession)", httpResponse.Message);
+                statusCode = (int)HttpStatusCode.InternalServerError;
             }
             else
             {
-                httpResponse.Message = "good";
-                httpResponse.username = userInformation.userName;
-                Random random = new System.Random();
-                string sessionId;
-                while (true)
+                UserInformation userInformation = SessionHelpers.Login(username, password);
+                if (userInformation == null)
                 {
-                    sessionId = GenericHelpers.CreateMD5(random.Next(114514, 1919810).ToString());
-                    string sessionKeyName = "EARTH_FUSION_SESSION_" + sessionId;
-                    if (RedisHelpers.GetString(sessionKeyName) == null)
-                    {
-                        RedisHelpers.SetString(sessionKeyName, userInformation.userId.ToString());
-                        // three hour
-                        RedisHelpers.SetKeyExpireTime(sessionKeyName, 3 * 60 * 60);
-                        break;
-                    }
+                    statusCode = (int)HttpStatusCode.Forbidden;
+                    httpResponse.Message = "boom";
                 }
-                httpResponse.sessionId = sessionId;
+                else
+                {
+                    httpResponse.Message = "good";
+                    httpResponse.username = userInformation.userName;
+                    Random random = new System.Random();
+                    string sessionId;
+                    while (true)
+                    {
+                        // fake SHA1
+                        sessionId = GenericHelpers.GetRandomHexNumber(40);
+                        string sessionKeyName = "EARTH_FUSION_SESSION_" + sessionId;
+                        if (RedisHelpers.GetString(sessionKeyName) == null)
+                        {
+                            RedisHelpers.SetString(sessionKeyName, userInformation.userId.ToString());
+                            // expire time: three hour
+                            RedisHelpers.SetKeyExpireTime(sessionKeyName, 3 * 60 * 60);
+                            break;
+                        }
+                    }
+                    httpResponse.sessionId = sessionId;
+                }
             }
             httpResponse.StatusCode = statusCode;
             this.HttpContext.Response.StatusCode = statusCode;
@@ -59,14 +69,15 @@ namespace EarthFusion.Controllers
         }
 
         [HttpGet]
+        // public UserInformationHttp Session(string sessionId)
         public UserInformationHttp GetSession(string sessionId)
         {
             UserInformationHttp httpResponse = new UserInformationHttp();
             Logging.Info("request", "Received request for GetSession");
-            Logging.Info("GetSession", "sessionId: " + sessionId);
+            Logging.Info("Session(GetSession)", "sessionId: " + sessionId);
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
-            Logging.Info("GetSession", "Begins.");
+            Logging.Info("Session(GetSession)", "Begins.");
             UserInformation currentUser = SessionHelpers.Validate(sessionId);
             if (currentUser == null)
             {
@@ -85,6 +96,7 @@ namespace EarthFusion.Controllers
         }
 
         [HttpPost]
+        // public RegisterResult Register(string username, string password)
         public RegisterResult RegisterAccount(string username, string password)
         {
             RegisterResult httpResponse = new RegisterResult();
@@ -94,13 +106,13 @@ namespace EarthFusion.Controllers
             if (username == null || password == null)
             {
                 httpResponse.Message = "Register failed. Something you provided is null.";
-                Logging.Info("RegisterAccount", httpResponse.Message);
+                Logging.Info("Register(RegisterAccount)", httpResponse.Message);
                 statusCode = (int)HttpStatusCode.InternalServerError;
             }
             else
             {
-                Logging.Info("RegisterAccount", "username: " + username);
-                Logging.Info("RegisterAccount", "Begins.");
+                Logging.Info("Register(RegisterAccount)", "username: " + username);
+                Logging.Info("Register(RegisterAccount)", "Begins.");
                 bool result = SessionHelpers.RegisterWithoutEmail(username, password);
                 httpResponse.Result = result;
                 if (!result)
@@ -120,16 +132,17 @@ namespace EarthFusion.Controllers
         }
 
         [HttpPost]
+        // public RegisterResult RegisterAlt(RegisterRequest httpRequest)
         public RegisterResult RegisterAccountAlt(RegisterRequest httpRequest)
         {
             string username = httpRequest.Username;
             string password = httpRequest.Password;
             RegisterResult httpResponse = new RegisterResult();
             Logging.Info("request", "Received request for RegisterAccount");
-            Logging.Info("RegisterAccountAlt", "username: " + username);
+            Logging.Info("RegisterAlt(RegisterAccountAlt)", "username: " + username);
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
-            Logging.Info("RegisterAccountAlt", "Begins.");
+            Logging.Info("RegisterAlt(RegisterAccountAlt)", "Begins.");
             bool result = SessionHelpers.RegisterWithoutEmail(username, password);
             httpResponse.Result = result;
             if (!result)
@@ -146,9 +159,11 @@ namespace EarthFusion.Controllers
             Logging.Info("request", "Reponse returned for RegisterAccountAlt");
             return httpResponse;
         }
+
         [HttpPost]
-        public BussinessDistrictReport AnalysisBussinessDistricReport(string sessionId,double log,double lat)
+        public BussinessDistrictReport AnalysisBussinessDistricReport(string sessionId, double log, double lat)
         {
+
             UserInformation user =SessionHelpers.Validate(sessionId);
             if(user==null) return null;
             BussinessDistrictReport report=new BussinessDistrictReport();
@@ -160,10 +175,12 @@ namespace EarthFusion.Controllers
             report.competitiveness=OracleHelpers.CompetitivenessPointQuery(log,lat,1000)*5+OracleHelpers.CompetitivenessPointQuery(log,lat,2000);
             report.busAccessibility=OracleHelpers.BusAccessibilityPointQuery(log,lat,1000)*5+OracleHelpers.BusAccessibilityPointQuery(log,lat,2000);
             report.date=DateTime.Now;
+
             return report;
         }
+
         [HttpPost]
-        public BussinessVitalityReport AnalysisBussinessVitalityReport(string sessionId,double ullog,double ullat,double lrlog,double lrlat,int rowNum,int colNum)
+        public BussinessVitalityReport AnalysisBussinessVitalityReport(string sessionId, double ullog, double ullat, double lrlog, double lrlat, int rowNum, int colNum)
         {
             UserInformation user =SessionHelpers.Validate(sessionId);
             if(user==null) return null;
@@ -182,7 +199,7 @@ namespace EarthFusion.Controllers
             double dellat=(ullat-lrlat)/rowNum;
             for(i=0;i<colNum;i++)
             {
-                for(j=0;j<rowNum;j++)
+                for (j = 0; j < rowNum; j++)
                 {
                     double cullog,cullat,clrlog,clrlat;
                     cullog=ullog+dellog*i;
@@ -202,12 +219,13 @@ namespace EarthFusion.Controllers
             }
             return report;
         }
+
         [HttpGet]
-        public BussinessDistrictReport GetBussinessDistricReportByReportID(string sessionId,int reportId)
+        public BussinessDistrictReport GetBussinessDistricReportByReportID(string sessionId, int reportId)
         {
             UserInformation user = GetSession(sessionId).userInformation;
-            if(user==null) return null;
-            BussinessDistrictReport report=new BussinessDistrictReport();
+            if (user == null) return null;
+            BussinessDistrictReport report = new BussinessDistrictReport();
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
@@ -222,7 +240,7 @@ namespace EarthFusion.Controllers
 
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            if(reader.RowSize==0) return null;
+            if (reader.RowSize == 0) return null;
             try
             {
                 /*
@@ -242,13 +260,13 @@ namespace EarthFusion.Controllers
                 */
                 while (reader.Read())
                 {
-                    report.userId=reader.GetInt32(0);
-                    report.reportId=reader.GetInt32(1);
-                    report.longitude=reader.GetFloat(2);
-                    report.latitude=reader.GetFloat(3);
-                    report.date=reader.GetDateTime(4);
-                    report.competitiveness=reader.GetInt32(5);
-                    report.trafficAccessibility=reader.GetInt32(6);
+                    report.userId = reader.GetInt32(0);
+                    report.reportId = reader.GetInt32(1);
+                    report.longitude = reader.GetFloat(2);
+                    report.latitude = reader.GetFloat(3);
+                    report.date = reader.GetDateTime(4);
+                    report.competitiveness = reader.GetInt32(5);
+                    report.trafficAccessibility = reader.GetInt32(6);
                 }
             }
             finally
@@ -258,51 +276,76 @@ namespace EarthFusion.Controllers
             }
             conn.Close();
             return report;
-        
         }
 
         [HttpGet]
-        public BussinessVitalityReport GetBussinessVitalityReportByReportID(string sessionId,int reportId)
+        public BussinessVitalityReport GetBussinessVitalityReportByReportID(string sessionId, int reportId)
         {
-             UserInformation user = GetSession(sessionId).userInformation;
-             BussinessVitalityReport report=new BussinessVitalityReport();
-             report.date=DateTime.Now;
-             report.reportId=1;
-             report.userId=897;
-             report.colNum=2;
-             report.rowNum=2;
-             report.trafficAccessibility="0,20,30,40";
-             report.competitiveness="0,10,23,40";
-             return report;             
+            UserInformation user = GetSession(sessionId).userInformation;
+            BussinessVitalityReport report = new BussinessVitalityReport();
+            report.date = DateTime.Now;
+            report.reportId = 1;
+            report.userId = 897;
+            report.colNum = 2;
+            report.rowNum = 2;
+            report.trafficAccessibility = "0,20,30,40";
+            report.competitiveness = "0,10,23,40";
+            return report;
         }
+
         [HttpGet]
         public UserIDWithAllReport GetAllBussinessVitalityReport(string sessionId)
         {
-             UserInformation user = GetSession(sessionId).userInformation;
-             if(user==null) return null;
-             UserIDWithAllReport result=new UserIDWithAllReport();
-             ReportTag tag=new ReportTag();
-             tag.date=DateTime.Now;
-             tag.reportId=100;
-             result.userId=user.userId;
-             result.allReports.Add(tag);
-             result.allReports.Add(tag);
-             return result;             
+            UserInformation user = GetSession(sessionId).userInformation;
+            if (user == null) return null;
+            UserIDWithAllReport result = new UserIDWithAllReport();
+            ReportTag tag = new ReportTag();
+            tag.date = DateTime.Now;
+            tag.reportId = 100;
+            result.userId = user.userId;
+            result.allReports.Add(tag);
+            result.allReports.Add(tag);
+            return result;
         }
+
         [HttpGet]
         public UserIDWithAllReport GetAllBussinessDistricReport(string sessionId)
         {
-             UserInformation user = GetSession(sessionId).userInformation;
-             if(user==null) return null;
-             UserIDWithAllReport result=new UserIDWithAllReport();
-             ReportTag tag=new ReportTag();
-             tag.date=DateTime.Now;
-             tag.reportId=100;
-             result.userId=user.userId;
-             result.allReports.Add(tag);
-             result.allReports.Add(tag);
-             return result;             
+            UserInformation user = GetSession(sessionId).userInformation;
+            if (user == null) return null;
+            UserIDWithAllReport result = new UserIDWithAllReport();
+            ReportTag tag = new ReportTag();
+            tag.date = DateTime.Now;
+            tag.reportId = 100;
+            result.userId = user.userId;
+            result.allReports.Add(tag);
+            result.allReports.Add(tag);
+            return result;
         }
 
+        [HttpGet]
+        public ShopSearchResponse SearchShopByExactName(string sessionId, string query)
+        {
+            ShopSearchResponse httpResponse = new ShopSearchResponse();
+            Logging.Info("request", "Received request for ShopSearchExact");
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            UserInformation currentUser = SessionHelpers.Validate(sessionId);
+            if (currentUser == null)
+            {
+                httpResponse.Message = "No such user.";
+                statusCode = (int)HttpStatusCode.Forbidden;
+            }
+            else
+            {
+                httpResponse.Message = "Okay..";
+                List<ShopSearchResult> result = ShopSearchExact.Search(query);
+                httpResponse.Contents = result;
+            }
+            httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
+            Logging.Info("request", "Reponse returned for ShopSearchExact");
+            return httpResponse;
+        }
     }
 }

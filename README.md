@@ -48,6 +48,8 @@ EARTH_FUSION_SPATIAL_DB_USERNAME=***
 EARTH_FUSION_SPATIAL_DB_PASSWORD=***
 EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME=***
 EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD=***
+EARTH_FUSION_LISTEN_HTTP_PORT=5000
+EARTH_FUSION_LISTEN_HTTPS_PORT=5001
 ```
 
 Build and run:
@@ -69,6 +71,44 @@ dotnet build
 
 * It's recommended to create a script.
 
+## Remote control / deploy over HTTPS
+
+### Config
+
+Create a `remote_web_deployment_config.json` file for self defined port number to listen on.
+
+```json
+{
+    "earthfusion": {
+        "remote_web_deployment": {
+            "port_num": ****
+        }
+    }
+}
+```
+
+### Prerequisites
+
+```bash
+pip3 install flask gevent
+```
+
+### Run
+
+By default(no config file present), it listens on `6000`.
+
+Make sure to put an `rebuild_and_start.sh` under project root.
+
+```bash
+python3 ./remote_web_deployment.py
+```
+
+### API Endpoint:
+
+```url
+https://[your_machine]:[port_num]/api/earthfusion_ctl/stop_pull_start
+```
+
 ## Dev Logs
 
 ### 2020/7/21
@@ -82,3 +122,7 @@ dotnet build
 ### 2020/8/19
 
 - [X] Use ini file for config
+
+### 2020/9/6
+
+- [X] Remote control and deploy over HTTPS
