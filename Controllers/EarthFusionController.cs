@@ -157,7 +157,8 @@ namespace EarthFusion.Controllers
             report.latitude=lat;
             report.reportId=1;
             report.trafficAccessibility=OracleHelpers.TrafficAccessibilityPointQuery(log,lat,1000)*5+OracleHelpers.TrafficAccessibilityPointQuery(log,lat,2000);
-            report.competitiveness=OracleHelpers.CompetitivenessPointQuery(log,lat);
+            report.competitiveness=OracleHelpers.CompetitivenessPointQuery(log,lat,1000)*5+OracleHelpers.CompetitivenessPointQuery(log,lat,2000);
+            report.busAccessibility=OracleHelpers.BusAccessibilityPointQuery(log,lat,1000)*5+OracleHelpers.BusAccessibilityPointQuery(log,lat,2000);
             report.date=DateTime.Now;
             return report;
         }
@@ -174,8 +175,8 @@ namespace EarthFusion.Controllers
             report.date=DateTime.Now;
             report.ulLongitude=ullog;
             report.ulLatitude=ullat;
-            report.ldLongitude=lrlog;
-            report.ldLatitude=lrlat;
+            report.lrLongitude=lrlog;
+            report.lrLatitude=lrlat;
             int i,j;
             double dellog=(lrlog-ullog)/colNum;
             double dellat=(ullat-lrlat)/rowNum;
@@ -192,8 +193,11 @@ namespace EarthFusion.Controllers
                                                     +OracleHelpers.TrafficAccessibilityRegionQuery(cullog-4.5*dellog,cullat+4.5*dellog,clrlog+4.5*dellog,clrlat-4.5*dellog);
                     int ccompetitiveness=OracleHelpers.CompetitivenessRegionQuery(cullog,cullat,clrlog,clrlat)*80
                                                     +OracleHelpers.CompetitivenessRegionQuery(cullog-4.5*dellog,cullat+4.5*dellog,clrlog+4.5*dellog,clrlat-4.5*dellog);
+                    int cbusAccessibility=OracleHelpers.BusAccessibilityRegionQuery(cullog,cullat,clrlog,clrlat)*80
+                                                    +OracleHelpers.BusAccessibilityRegionQuery(cullog-4.5*dellog,cullat+4.5*dellog,clrlog+4.5*dellog,clrlat-4.5*dellog);
                     report.trafficAccessibility+=ctrafficAccessibilit+",";
                     report.competitiveness+=ccompetitiveness+",";
+                    report.busAccessibility+=cbusAccessibility+",";
                 }
             }
             return report;
