@@ -18,7 +18,7 @@ namespace OracleTest.Controllers
     public class OracleTestController : ControllerBase
     {
         [HttpGet]
-        
+
         // This self-defined request should use Content-Type: applicaion/json. 
         public IEnumerable<OracleConnectionTestResult> DatabaseConnectionTest(OracleConnectionTestRequest request)
         {
@@ -73,7 +73,7 @@ namespace OracleTest.Controllers
             {
                 // get result
                 result = OracleTests.WktPullTest(request.Username, request.Password, request.Tablename, request.RowCount);
-                
+
                 // if no row seleted...
                 if (result.Count() == 0)
                 {
@@ -99,7 +99,7 @@ namespace OracleTest.Controllers
             }
             // // or should i just use the result?
             // httpResponse.Contents = result;
-            
+
             // tests shows there are no statical difference by the means of time. 
 
             // restore table information with predefined dict (Classes/KnownTables.cs)

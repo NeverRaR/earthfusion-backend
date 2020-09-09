@@ -164,17 +164,17 @@ namespace EarthFusion.Controllers
         public BussinessDistrictReport AnalysisBussinessDistricReport(string sessionId, double log, double lat)
         {
 
-            UserInformation user =SessionHelpers.Validate(sessionId);
-            if(user==null) return null;
-            BussinessDistrictReport report=new BussinessDistrictReport();
-            report.userId=user.userId;
-            report.longitude=log;
-            report.latitude=lat;
-            report.reportId=1;
-            report.trafficAccessibility=OracleHelpers.TrafficAccessibilityPointQuery(log,lat,1000)*5+OracleHelpers.TrafficAccessibilityPointQuery(log,lat,2000);
-            report.competitiveness=OracleHelpers.CompetitivenessPointQuery(log,lat,1000)*5+OracleHelpers.CompetitivenessPointQuery(log,lat,2000);
-            report.busAccessibility=OracleHelpers.BusAccessibilityPointQuery(log,lat,1000)*5+OracleHelpers.BusAccessibilityPointQuery(log,lat,2000);
-            report.date=DateTime.Now;
+            UserInformation user = SessionHelpers.Validate(sessionId);
+            if (user == null) return null;
+            BussinessDistrictReport report = new BussinessDistrictReport();
+            report.userId = user.userId;
+            report.longitude = log;
+            report.latitude = lat;
+            report.reportId = 1;
+            report.trafficAccessibility = OracleHelpers.TrafficAccessibilityPointQuery(log, lat, 1000) * 5 + OracleHelpers.TrafficAccessibilityPointQuery(log, lat, 2000);
+            report.competitiveness = OracleHelpers.CompetitivenessPointQuery(log, lat, 1000) * 5 + OracleHelpers.CompetitivenessPointQuery(log, lat, 2000);
+            report.busAccessibility = OracleHelpers.BusAccessibilityPointQuery(log, lat, 1000) * 5 + OracleHelpers.BusAccessibilityPointQuery(log, lat, 2000);
+            report.date = DateTime.Now;
 
             return report;
         }
@@ -182,39 +182,39 @@ namespace EarthFusion.Controllers
         [HttpPost]
         public BussinessVitalityReport AnalysisBussinessVitalityReport(string sessionId, double ullog, double ullat, double lrlog, double lrlat, int rowNum, int colNum)
         {
-            UserInformation user =SessionHelpers.Validate(sessionId);
-            if(user==null) return null;
-            if(rowNum*colNum>200) return null;
-            BussinessVitalityReport report=new BussinessVitalityReport();
-            report.userId=user.userId;
-            report.rowNum=rowNum;
-            report.colNum=colNum;
-            report.date=DateTime.Now;
-            report.ulLongitude=ullog;
-            report.ulLatitude=ullat;
-            report.lrLongitude=lrlog;
-            report.lrLatitude=lrlat;
-            int i,j;
-            double dellog=(lrlog-ullog)/colNum;
-            double dellat=(ullat-lrlat)/rowNum;
-            for(i=0;i<colNum;i++)
+            UserInformation user = SessionHelpers.Validate(sessionId);
+            if (user == null) return null;
+            if (rowNum * colNum > 200) return null;
+            BussinessVitalityReport report = new BussinessVitalityReport();
+            report.userId = user.userId;
+            report.rowNum = rowNum;
+            report.colNum = colNum;
+            report.date = DateTime.Now;
+            report.ulLongitude = ullog;
+            report.ulLatitude = ullat;
+            report.lrLongitude = lrlog;
+            report.lrLatitude = lrlat;
+            int i, j;
+            double dellog = (lrlog - ullog) / colNum;
+            double dellat = (ullat - lrlat) / rowNum;
+            for (i = 0; i < colNum; i++)
             {
                 for (j = 0; j < rowNum; j++)
                 {
-                    double cullog,cullat,clrlog,clrlat;
-                    cullog=ullog+dellog*i;
-                    cullat=ullat-dellat*j;
-                    clrlog=cullog+dellog;
-                    clrlat=cullat-dellat;
-                    int ctrafficAccessibilit=OracleHelpers.TrafficAccessibilityRegionQuery(cullog,cullat,clrlog,clrlat)*80
-                                                    +OracleHelpers.TrafficAccessibilityRegionQuery(cullog-4.5*dellog,cullat+4.5*dellog,clrlog+4.5*dellog,clrlat-4.5*dellog);
-                    int ccompetitiveness=OracleHelpers.CompetitivenessRegionQuery(cullog,cullat,clrlog,clrlat)*80
-                                                    +OracleHelpers.CompetitivenessRegionQuery(cullog-4.5*dellog,cullat+4.5*dellog,clrlog+4.5*dellog,clrlat-4.5*dellog);
-                    int cbusAccessibility=OracleHelpers.BusAccessibilityRegionQuery(cullog,cullat,clrlog,clrlat)*80
-                                                    +OracleHelpers.BusAccessibilityRegionQuery(cullog-4.5*dellog,cullat+4.5*dellog,clrlog+4.5*dellog,clrlat-4.5*dellog);
-                    report.trafficAccessibility+=ctrafficAccessibilit+",";
-                    report.competitiveness+=ccompetitiveness+",";
-                    report.busAccessibility+=cbusAccessibility+",";
+                    double cullog, cullat, clrlog, clrlat;
+                    cullog = ullog + dellog * i;
+                    cullat = ullat - dellat * j;
+                    clrlog = cullog + dellog;
+                    clrlat = cullat - dellat;
+                    int ctrafficAccessibilit = OracleHelpers.TrafficAccessibilityRegionQuery(cullog, cullat, clrlog, clrlat) * 80
+                                                    + OracleHelpers.TrafficAccessibilityRegionQuery(cullog - 4.5 * dellog, cullat + 4.5 * dellog, clrlog + 4.5 * dellog, clrlat - 4.5 * dellog);
+                    int ccompetitiveness = OracleHelpers.CompetitivenessRegionQuery(cullog, cullat, clrlog, clrlat) * 80
+                                                    + OracleHelpers.CompetitivenessRegionQuery(cullog - 4.5 * dellog, cullat + 4.5 * dellog, clrlog + 4.5 * dellog, clrlat - 4.5 * dellog);
+                    int cbusAccessibility = OracleHelpers.BusAccessibilityRegionQuery(cullog, cullat, clrlog, clrlat) * 80
+                                                    + OracleHelpers.BusAccessibilityRegionQuery(cullog - 4.5 * dellog, cullat + 4.5 * dellog, clrlog + 4.5 * dellog, clrlat - 4.5 * dellog);
+                    report.trafficAccessibility += ctrafficAccessibilit + ",";
+                    report.competitiveness += ccompetitiveness + ",";
+                    report.busAccessibility += cbusAccessibility + ",";
                 }
             }
             return report;

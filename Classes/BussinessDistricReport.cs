@@ -2,7 +2,7 @@ using System;
 
 namespace EarthFusion
 {
-    
+
     public class BussinessDistrictReport
     {
         public int userId { get; set; }
@@ -10,8 +10,8 @@ namespace EarthFusion
         public double longitude { get; set; }
         public double latitude { get; set; }
         public DateTime date { get; set; }
-        public int trafficAccessibility  { get; set; }
-        public int busAccessibility  { get; set; }
-        public int  competitiveness  { get; set; }
+        public int trafficAccessibility { get; set; }
+        public int busAccessibility { get; set; }
+        public int competitiveness { get; set; }
     }
 }

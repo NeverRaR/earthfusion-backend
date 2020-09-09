@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 namespace EarthFusion
 {
-    
+
     public class BussinessVitalityReport
     {
         public int userId { get; set; }
@@ -14,8 +14,8 @@ namespace EarthFusion
         public DateTime date { get; set; }
         public int rowNum { get; set; }
         public int colNum { get; set; }
-        public String trafficAccessibility  { get; set; }
-        public String busAccessibility  { get; set; }
-        public String competitiveness  { get; set; }
+        public String trafficAccessibility { get; set; }
+        public String busAccessibility { get; set; }
+        public String competitiveness { get; set; }
     }
 }
