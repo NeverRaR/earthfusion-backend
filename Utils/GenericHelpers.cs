@@ -2,6 +2,8 @@ using System;
 using System.Text.RegularExpressions;
 using System.Text;
 using System.Net.Mail;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace Utils
@@ -101,6 +103,34 @@ namespace Utils
                 }
                 return sb.ToString();
             }
+        }
+
+        public static string ComputeSha1Hash(string input)
+        {
+            using (SHA1Managed sha1 = new SHA1Managed())
+            {
+                var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
+                var sb = new StringBuilder(hash.Length * 2);
+
+                foreach (byte b in hash)
+                {
+                    // can be "x2" if you want lowercase
+                    sb.Append(b.ToString("X2"));
+                }
+
+                return sb.ToString();
+            }
+        }
+
+        public static string GetRandomHexNumber(int digits)
+        {
+            Random random = new Random();
+            byte[] buffer = new byte[digits / 2];
+            random.NextBytes(buffer);
+            string result = String.Concat(buffer.Select(x => x.ToString("X2")).ToArray());
+            if (digits % 2 == 0)
+                return result;
+            return result + random.Next(16).ToString("X");
         }
     }
 }

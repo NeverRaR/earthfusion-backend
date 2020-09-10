@@ -2,7 +2,6 @@ using System;
 
 namespace EarthFusion
 {
-    
     public class BussinessDistrictReport
     {
         public int userId { get; set; }

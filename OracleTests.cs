@@ -28,7 +28,7 @@ namespace Utils
             List<WktWithName> contents = new List<WktWithName>();
 
             string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
-            
+
             // has geom?
             bool hasGeom = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "GEOM".ToString());
             if (!hasGeom)
@@ -93,7 +93,7 @@ namespace Utils
             conn.Close();
             return contents;
         }
-          public static List<WktWithName> NameSearchTest(string username, string passwd, string tableName, string nameOfPlace)
+        public static List<WktWithName> NameSearchTest(string username, string passwd, string tableName, string nameOfPlace)
         {
             // conn to use
             OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
@@ -105,11 +105,11 @@ namespace Utils
             // has geom?
             bool hasGeom = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "GEOM".ToString());
             bool hasName = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "NAME".ToString());
-            if (!hasGeom||!hasName)
+            if (!hasGeom || !hasName)
             {
                 return contents;
             }
-            string  testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where NAME like '%" + nameOfPlace + "%'").ToString();
+            string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where NAME like '%" + nameOfPlace + "%'").ToString();
             Logging.Info("NameSearchTest", "Constructed query: " + testQueryString);
 
             // constructs command from string

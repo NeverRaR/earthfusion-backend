@@ -2,7 +2,7 @@ using System;
 
 namespace EarthFusion
 {
-    
+
     public class ReportTag
     {
         public ReportTag(){}
