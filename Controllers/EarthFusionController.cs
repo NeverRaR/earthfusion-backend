@@ -375,7 +375,6 @@ namespace EarthFusion.Controllers
             result.userId=user.userId;
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            if(reader.RowSize==0) return null;
             try
             {
                 while (reader.Read())
@@ -416,7 +415,6 @@ namespace EarthFusion.Controllers
             result.userId=user.userId;
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
-            if(reader.RowSize==0) return null;
             try
             {
                 while (reader.Read())
@@ -437,10 +435,14 @@ namespace EarthFusion.Controllers
         }
 
         [HttpDelete]
-        public void DeleteBussinessDistrictReport(String sessionId,int reportId)
+        public CommonResponse DeleteBussinessDistrictReport(String sessionId,int reportId)
         {
-             UserInformation user = GetSession(sessionId).userInformation;
-            if(user==null) return ;
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
@@ -465,13 +467,20 @@ namespace EarthFusion.Controllers
             {
                 conn.Close();
             }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
         }
 
         [HttpDelete]
-        public void DeleteBussinessVitalityReport(String sessionId,int reportId)
+        public CommonResponse DeleteBussinessVitalityReport(String sessionId,int reportId)
         {
-             UserInformation user = GetSession(sessionId).userInformation;
-            if(user==null) return ;
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
@@ -496,6 +505,9 @@ namespace EarthFusion.Controllers
             {
                 conn.Close();
             }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
         }
 
         [HttpGet]
