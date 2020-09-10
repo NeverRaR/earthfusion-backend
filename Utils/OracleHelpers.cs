@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
-
+using EarthFusion;
 namespace Utils
 {
     class OracleHelpers
@@ -264,7 +264,7 @@ namespace Utils
         }
         
 
-          public static int BusAccessibilityRegionQuery(double ullog,double ullat,double lrlog,double lrlat)
+        public static int BusAccessibilityRegionQuery(double ullog,double ullat,double lrlog,double lrlat)
         {
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
@@ -313,7 +313,7 @@ namespace Utils
             return ans;
         
         }
-         public static int TrafficAccessibilityPointQuery(double log,double lat,float dis)
+        public static int TrafficAccessibilityPointQuery(double log,double lat,float dis)
         {
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
@@ -363,8 +363,7 @@ namespace Utils
             return ans;
         
         }
-
-            public static int BusAccessibilityPointQuery(double log,double lat,double dis)
+        public static int BusAccessibilityPointQuery(double log,double lat,double dis)
         {
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
@@ -412,7 +411,131 @@ namespace Utils
             }
             conn.Close();
             return ans;
-        
+        }
+        public static int InsertBussinessDistrictReport(BussinessDistrictReport report)
+        {
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select count(*)"
+                                +" from nemo.BUSSINESSDISTRICTREPORT a ";
+            Logging.Info("InsertBussinessDistrictReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            int ans=0;
+            if(reader.RowSize==0)
+            {
+                reader.Close();
+                conn.Close();
+                return -1;
+            }
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   ans=reader.GetInt32(0);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            Logging.Info("InsertBussinessDistrictReport",ans.ToString());
+            report.reportId=ans+1;
+            string InsertString="INSERT INTO NEMO.BUSSINESSDISTRICTREPORT"
+                               +" VALUES("+report.userId+","+report.reportId+","
+                               +report.longitude+","+report.latitude+","
+                               +"to_date('"+report.date+"','yyyy-mm-dd hh24:mi:ss'),"
+                               +report.competitiveness+","+report.trafficAccessibility+","
+                               +report.busAccessibility+")";
+            command=new OracleCommand(InsertString,conn);
+            Logging.Info("InsertBussinessDistrictReport", "Constructed insert: " + InsertString);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("InsertBussinessDistrictReport","an exception "+e.Message);
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return report.reportId;
+        }
+        public static int InsertBussinessVitalityReport(BussinessVitalityReport report)
+        {
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select count(*)"
+                                +" from nemo.BUSSINESSVITALITYREPORT a ";
+            Logging.Info("InsertBussinessDistrictReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            int ans=0;
+            if(reader.RowSize==0)
+            {
+                reader.Close();
+                conn.Close();
+                return -1;
+            }
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   ans=reader.GetInt32(0);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            Logging.Info("InsertBussinessVitalityReport",ans.ToString());
+            report.reportId=ans+1;
+            string InsertString="INSERT INTO NEMO.BUSSINESSVITALITYREPORT"
+                               +" VALUES("+report.userId+","+report.reportId+","
+                               +report.ulLongitude+","+report.ulLatitude+","
+                               +report.lrLongitude+","+report.lrLatitude+","
+                               +"to_date('"+report.date+"','yyyy-mm-dd hh24:mi:ss'),"
+                               +"'"+report.competitiveness+"',"+report.rowNum+","+report.colNum
+                               +",'"+report.trafficAccessibility+"','"+report.busAccessibility+"')";
+            command=new OracleCommand(InsertString,conn);
+            Logging.Info("InsertBussinessVitalityReport", "Constructed insert: " + InsertString);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("InsertBussinessVitalityReport","an exception "+e.Message);
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return report.reportId;
         }
     }
 }

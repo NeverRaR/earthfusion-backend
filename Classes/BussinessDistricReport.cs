@@ -9,7 +9,7 @@ namespace EarthFusion
         public int reportId { get; set; }
         public double longitude { get; set; }
         public double latitude { get; set; }
-        public DateTime date { get; set; }
+        public String date { get; set; }
         public int trafficAccessibility  { get; set; }
         public int busAccessibility  { get; set; }
         public int  competitiveness  { get; set; }

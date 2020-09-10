@@ -146,8 +146,8 @@ namespace EarthFusion.Controllers
             Logging.Info("request", "Reponse returned for RegisterAccountAlt");
             return httpResponse;
         }
-        [HttpPost]
-        public BussinessDistrictReport AnalysisBussinessDistricReport(string sessionId,double log,double lat)
+        [HttpGet]
+        public BussinessDistrictReport AnalysisBussinessDistrictReport(string sessionId,double log,double lat)
         {
             UserInformation user =SessionHelpers.Validate(sessionId);
             if(user==null) return null;
@@ -155,14 +155,57 @@ namespace EarthFusion.Controllers
             report.userId=user.userId;
             report.longitude=log;
             report.latitude=lat;
-            report.reportId=1;
+            report.reportId=-1;
             report.trafficAccessibility=OracleHelpers.TrafficAccessibilityPointQuery(log,lat,1000)*5+OracleHelpers.TrafficAccessibilityPointQuery(log,lat,2000);
             report.competitiveness=OracleHelpers.CompetitivenessPointQuery(log,lat,1000)*5+OracleHelpers.CompetitivenessPointQuery(log,lat,2000);
             report.busAccessibility=OracleHelpers.BusAccessibilityPointQuery(log,lat,1000)*5+OracleHelpers.BusAccessibilityPointQuery(log,lat,2000);
-            report.date=DateTime.Now;
+            report.date=DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            OracleHelpers.InsertBussinessDistrictReport(report);
             return report;
         }
+
         [HttpPost]
+        public ReportTag UploadBussinessDistrictReport(string sessionId,double longitude,double latitude,String date,int trafficAccessibility,int busAccessibility,int competitiveness)
+        {
+            UserInformation user =SessionHelpers.Validate(sessionId);
+            if(user==null) return null;
+            BussinessDistrictReport report=new BussinessDistrictReport();
+            report.userId=user.userId;
+            report.longitude=longitude;
+            report.latitude=latitude;
+            report.date=date;
+            report.trafficAccessibility=trafficAccessibility;
+            report.busAccessibility=busAccessibility;
+            report.competitiveness=competitiveness;
+            ReportTag tag=new ReportTag();
+            tag.reportId=OracleHelpers.InsertBussinessDistrictReport(report);
+            tag.date=date;
+            return tag;            
+        }
+
+        [HttpPost]
+        public ReportTag UploadBussinessVitalityReport(string sessionId,double ulLongitude,double ulLatitude,double lrLongitude,double lrLatitude,String date,String trafficAccessibility,String busAccessibility,String competitiveness,int rowNum,int colNum)
+        {
+            UserInformation user =SessionHelpers.Validate(sessionId);
+            if(user==null) return null;
+            BussinessVitalityReport report=new BussinessVitalityReport();
+            report.userId=user.userId;
+            report.ulLongitude=ulLongitude;
+            report.ulLatitude=ulLatitude;
+            report.lrLongitude=lrLongitude;
+            report.lrLatitude=lrLatitude;
+            report.date=date;
+            report.rowNum=rowNum;
+            report.colNum=colNum;
+            report.trafficAccessibility=trafficAccessibility;
+            report.busAccessibility=busAccessibility;
+            report.competitiveness=competitiveness;
+            ReportTag tag=new ReportTag();
+            tag.reportId=OracleHelpers.InsertBussinessVitalityReport(report);
+            tag.date=date;
+            return tag;            
+        }
+        [HttpGet]
         public BussinessVitalityReport AnalysisBussinessVitalityReport(string sessionId,double ullog,double ullat,double lrlog,double lrlat,int rowNum,int colNum)
         {
             UserInformation user =SessionHelpers.Validate(sessionId);
@@ -172,7 +215,7 @@ namespace EarthFusion.Controllers
             report.userId=user.userId;
             report.rowNum=rowNum;
             report.colNum=colNum;
-            report.date=DateTime.Now;
+            report.date=DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             report.ulLongitude=ullog;
             report.ulLatitude=ullat;
             report.lrLongitude=lrlog;
@@ -203,7 +246,7 @@ namespace EarthFusion.Controllers
             return report;
         }
         [HttpGet]
-        public BussinessDistrictReport GetBussinessDistricReportByReportID(string sessionId,int reportId)
+        public BussinessDistrictReport GetBussinessDistrictReportByReportID(string sessionId,int reportId)
         {
             UserInformation user = GetSession(sessionId).userInformation;
             if(user==null) return null;
@@ -211,8 +254,9 @@ namespace EarthFusion.Controllers
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
-            string QueryString = ("select * from nemo.BussinessDistricReport where user_id=" + user.userId).ToString();
-            Logging.Info("GetBussinessDistricReportByReportID", "Constructed query: " + QueryString);
+
+            string QueryString = "select * from nemo.BussinessDistrictReport where user_id=" + user.userId+" AND bd_report_id="+reportId;
+            Logging.Info("GetBussinessDistrictReportByReportID", "Constructed query: " + QueryString);
 
             // constructs command from string
             OracleCommand command = new OracleCommand(QueryString, conn);
@@ -225,30 +269,16 @@ namespace EarthFusion.Controllers
             if(reader.RowSize==0) return null;
             try
             {
-                /*
-                   
-                    CREATE  TABLE nemo.BussinessDistricReport
-                    (
-                        user_id int,
-                        bd_report_id int,
-                        bd_report_log float,
-                        bd_report_lat float,
-                        bd_report_time date,
-                        bd_competitiveness int,
-                        bd_traffic_accessibility  int,
-                        PRIMARY KEY(bd_report_id)
-     
-                    )
-                */
                 while (reader.Read())
                 {
                     report.userId=reader.GetInt32(0);
                     report.reportId=reader.GetInt32(1);
                     report.longitude=reader.GetFloat(2);
                     report.latitude=reader.GetFloat(3);
-                    report.date=reader.GetDateTime(4);
+                    report.date=reader.GetDateTime(4).ToString("yyyy-MM-dd HH:mm:ss");
                     report.competitiveness=reader.GetInt32(5);
                     report.trafficAccessibility=reader.GetInt32(6);
+                    report.busAccessibility=reader.GetInt32(7);
                 }
             }
             finally
@@ -264,44 +294,193 @@ namespace EarthFusion.Controllers
         [HttpGet]
         public BussinessVitalityReport GetBussinessVitalityReportByReportID(string sessionId,int reportId)
         {
-             UserInformation user = GetSession(sessionId).userInformation;
-             BussinessVitalityReport report=new BussinessVitalityReport();
-             report.date=DateTime.Now;
-             report.reportId=1;
-             report.userId=897;
-             report.colNum=2;
-             report.rowNum=2;
-             report.trafficAccessibility="0,20,30,40";
-             report.competitiveness="0,10,23,40";
-             return report;             
+            UserInformation user = GetSession(sessionId).userInformation;
+            if(user==null) return null;
+            BussinessVitalityReport report=new BussinessVitalityReport();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string QueryString = "select * from nemo.BussinessVitalityReport where user_id=" + user.userId+" AND bv_report_id="+reportId;
+            Logging.Info("GetBussinessVitalityReportByReportID", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0) return null;
+            try
+            {
+                while (reader.Read())
+                {
+                    report.userId=reader.GetInt32(0);
+                    report.reportId=reader.GetInt32(1);
+                    report.ulLongitude=reader.GetFloat(2);
+                    report.ulLatitude=reader.GetFloat(3);
+                    report.lrLongitude=reader.GetInt32(4);
+                    report.lrLatitude=reader.GetInt32(5);
+                    report.date=reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm:ss");
+                    report.competitiveness=reader.GetString(7);
+                    report.rowNum=reader.GetInt32(8);
+                    report.colNum=reader.GetInt32(9);
+                    report.trafficAccessibility=reader.GetString(10);
+                    report.busAccessibility=reader.GetString(11);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return report;
         }
         [HttpGet]
         public UserIDWithAllReport GetAllBussinessVitalityReport(string sessionId)
         {
-             UserInformation user = GetSession(sessionId).userInformation;
-             if(user==null) return null;
-             UserIDWithAllReport result=new UserIDWithAllReport();
-             ReportTag tag=new ReportTag();
-             tag.date=DateTime.Now;
-             tag.reportId=100;
-             result.userId=user.userId;
-             result.allReports.Add(tag);
-             result.allReports.Add(tag);
-             return result;             
+            UserInformation user = GetSession(sessionId).userInformation;
+            if(user==null) return null;
+            BussinessVitalityReport report=new BussinessVitalityReport();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string QueryString = "select bv_report_id,bv_report_time from nemo.BussinessVitalityReport where user_id=" + user.userId;
+            Logging.Info("GetAllBussinessVitalityReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+            UserIDWithAllReport result=new UserIDWithAllReport();
+            result.userId=user.userId;
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0) return null;
+            try
+            {
+                while (reader.Read())
+                {
+                   ReportTag temp=new ReportTag();
+                   temp.reportId=reader.GetInt32(0);
+                   temp.date=reader.GetDateTime(1).ToString("yyyy-MM-dd HH:mm:ss");  
+                   result.allReports.Add(temp);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return result;
         }
         [HttpGet]
-        public UserIDWithAllReport GetAllBussinessDistricReport(string sessionId)
+        public UserIDWithAllReport GetAllBussinessDistrictReport(string sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            if(user==null) return null;
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string QueryString = "select bd_report_id,bd_report_time from nemo.BussinessDistrictReport where user_id=" + user.userId;
+            Logging.Info("GetAllBussinessDistrictReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+            UserIDWithAllReport result=new UserIDWithAllReport();
+            result.userId=user.userId;
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0) return null;
+            try
+            {
+                while (reader.Read())
+                {
+                   ReportTag temp=new ReportTag();
+                   temp.reportId=reader.GetInt32(0);
+                   temp.date=reader.GetDateTime(1).ToString("yyyy-MM-dd HH:mm:ss");  
+                   result.allReports.Add(temp);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return result;
+        }
+
+        [HttpDelete]
+        public void DeleteBussinessDistrictReport(String sessionId,int reportId)
         {
              UserInformation user = GetSession(sessionId).userInformation;
-             if(user==null) return null;
-             UserIDWithAllReport result=new UserIDWithAllReport();
-             ReportTag tag=new ReportTag();
-             tag.date=DateTime.Now;
-             tag.reportId=100;
-             result.userId=user.userId;
-             result.allReports.Add(tag);
-             result.allReports.Add(tag);
-             return result;             
+            if(user==null) return ;
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.BussinessDistrictReport where user_id=" + user.userId+" AND bd_report_id="+reportId;
+            Logging.Info("DeleteBussinessDistrictReport", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("DeleteBussinessDistrictReport","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+        [HttpDelete]
+        public void DeleteBussinessVitalityReport(String sessionId,int reportId)
+        {
+             UserInformation user = GetSession(sessionId).userInformation;
+            if(user==null) return ;
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.BussinessVitalityReport where user_id=" + user.userId+" AND bv_report_id="+reportId;
+            Logging.Info("DeleteBussinessVitalityReport", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("DeleteBussinessVitalityReport","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
         }
 
     }

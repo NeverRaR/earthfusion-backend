@@ -11,7 +11,7 @@ namespace EarthFusion
         public double ulLatitude { get; set; }
         public double lrLongitude { get; set; }
         public double lrLatitude { get; set; }
-        public DateTime date { get; set; }
+        public String date { get; set; }
         public int rowNum { get; set; }
         public int colNum { get; set; }
         public String trafficAccessibility  { get; set; }
