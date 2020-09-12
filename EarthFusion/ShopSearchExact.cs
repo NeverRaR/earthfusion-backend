@@ -18,7 +18,7 @@ namespace EarthFusion
             // List to return
             List<ShopSearchResult> contents = new List<ShopSearchResult>();
 
-            string testQueryString = "SELECT DISTINCT name, address, lat, lon, area, detail from nemo.SHANGHAI_SHOPS where lower(name) LIKE '%" + query.ToLower() + "%'";
+            string testQueryString = "SELECT DISTINCT name, address, lat, lon, area from nemo.SHANGHAI_SHOPS where lower(name) LIKE '%" + query.ToLower() + "%'";
 
             Logging.Info("ShopSearchExact.Search", "Constructed query: " + testQueryString);
 
@@ -40,7 +40,8 @@ namespace EarthFusion
                     temp.Latitude = reader.GetDouble(2);
                     temp.Longitude = reader.GetDouble(3);
                     temp.District = reader.GetString(4);
-                    temp.ShopClass = reader.GetString(5);
+                    // commented this out. see description in ShopSearchResult.cs
+                    // temp.ShopClass = reader.GetString(5);
                     contents.Add(temp);
                 }
             }
