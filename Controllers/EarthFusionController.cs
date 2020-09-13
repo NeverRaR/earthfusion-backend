@@ -218,6 +218,27 @@ namespace EarthFusion.Controllers
             tag.date=date;
             return tag;            
         }
+        [HttpPost]
+        public ReportTag UploadTrafficAccessibilityReport(string sessionId,double ulLongitude,double ulLatitude,double lrLongitude,double lrLatitude,String date,String trafficAccessibility,String busAccessibility,String competitiveness,int rowNum,int colNum)
+        {
+            UserInformation user =SessionHelpers.Validate(sessionId);
+            if(user==null) return null;
+            TrafficAccessibilityReport report=new TrafficAccessibilityReport();
+            report.userId=user.userId;
+            report.ulLongitude=ulLongitude;
+            report.ulLatitude=ulLatitude;
+            report.lrLongitude=lrLongitude;
+            report.lrLatitude=lrLatitude;
+            report.date=date;
+            report.rowNum=rowNum;
+            report.colNum=colNum;
+            report.trafficAccessibility=trafficAccessibility;
+            report.busAccessibility=busAccessibility;
+            ReportTag tag=new ReportTag();
+            tag.reportId=OracleHelpers.InsertTrafficAccessibilityReport(report);
+            tag.date=date;
+            return tag;            
+        }
         [HttpGet]
         public BussinessVitalityReport AnalysisBussinessVitalityReport(string sessionId,double ullog,double ullat,double lrlog,double lrlat,int rowNum,int colNum)
         {
@@ -258,7 +279,43 @@ namespace EarthFusion.Controllers
             }
             return report;
         }
-
+        [HttpGet]
+        public TrafficAccessibilityReport AnalysisTrafficAccessibilityReport(string sessionId,double ullog,double ullat,double lrlog,double lrlat,int rowNum,int colNum)
+        {
+            UserInformation user =SessionHelpers.Validate(sessionId);
+            if(user==null) return null;
+            if(rowNum*colNum>200) return null;
+            TrafficAccessibilityReport report=new TrafficAccessibilityReport();
+            report.userId=user.userId;
+            report.rowNum=rowNum;
+            report.colNum=colNum;
+            report.date=DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            report.ulLongitude=ullog;
+            report.ulLatitude=ullat;
+            report.lrLongitude=lrlog;
+            report.lrLatitude=lrlat;
+            int i,j;
+            double dellog=(lrlog-ullog)/colNum;
+            double dellat=(ullat-lrlat)/rowNum;
+            for(i=0;i<colNum;i++)
+            {
+                for (j = 0; j < rowNum; j++)
+                {
+                    double cullog, cullat, clrlog, clrlat;
+                    cullog = ullog + dellog * i;
+                    cullat = ullat - dellat * j;
+                    clrlog = cullog + dellog;
+                    clrlat = cullat - dellat;
+                    int ctrafficAccessibilit = OracleHelpers.TrafficAccessibilityRegionQuery(cullog, cullat, clrlog, clrlat) * 80
+                                                    + OracleHelpers.TrafficAccessibilityRegionQuery(cullog - 4.5 * dellog, cullat + 4.5 * dellog, clrlog + 4.5 * dellog, clrlat - 4.5 * dellog);
+                    int cbusAccessibility = OracleHelpers.BusAccessibilityRegionQuery(cullog, cullat, clrlog, clrlat) * 80
+                                                    + OracleHelpers.BusAccessibilityRegionQuery(cullog - 4.5 * dellog, cullat + 4.5 * dellog, clrlog + 4.5 * dellog, clrlat - 4.5 * dellog);
+                    report.trafficAccessibility += ctrafficAccessibilit + ",";
+                    report.busAccessibility += cbusAccessibility + ",";
+                }
+            }
+            return report;
+        }
         [HttpGet]
         public BussinessDistrictReport GetBussinessDistrictReportByReportID(string sessionId,int reportId)
         {
@@ -354,6 +411,54 @@ namespace EarthFusion.Controllers
         }
 
         [HttpGet]
+        public TrafficAccessibilityReport GetTrafficAccessibilityReportByReportID(string sessionId, int reportId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            if(user==null) return null;
+            TrafficAccessibilityReport report=new TrafficAccessibilityReport();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string QueryString = "select * from nemo.TrafficAccessibilityReport where user_id=" + user.userId+" AND ta_report_id="+reportId;
+            Logging.Info("GetTrafficAccessibilityReportByReportID", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0) return null;
+            try
+            {
+                while (reader.Read())
+                {
+                    report.userId=reader.GetInt32(0);
+                    report.reportId=reader.GetInt32(1);
+                    report.ulLongitude=reader.GetFloat(2);
+                    report.ulLatitude=reader.GetFloat(3);
+                    report.lrLongitude=reader.GetInt32(4);
+                    report.lrLatitude=reader.GetInt32(5);
+                    report.date=reader.GetDateTime(6).ToString("yyyy-MM-dd HH:mm:ss");
+                    report.rowNum=reader.GetInt32(7);
+                    report.colNum=reader.GetInt32(8);
+                    report.trafficAccessibility=reader.GetString(9);
+                    report.busAccessibility=reader.GetString(10);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return report;
+        }
+
+        [HttpGet]
         public UserIDWithAllReport GetAllBussinessVitalityReport(string sessionId)
         {
             UserInformation user = GetSession(sessionId).userInformation;
@@ -433,7 +538,46 @@ namespace EarthFusion.Controllers
             conn.Close();
             return result;
         }
+        [HttpGet]
+        public UserIDWithAllReport GetAllTrafficAccessibilityReport(string sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            if(user==null) return null;
+            TrafficAccessibilityReport report=new TrafficAccessibilityReport();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
 
+            string QueryString = "select ta_report_id,ta_report_time from nemo.TrafficAccessibilityReport where user_id=" + user.userId;
+            Logging.Info("GetAllTrafficAccessibilityReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+            UserIDWithAllReport result=new UserIDWithAllReport();
+            result.userId=user.userId;
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                while (reader.Read())
+                {
+                   ReportTag temp=new ReportTag();
+                   temp.reportId=reader.GetInt32(0);
+                   temp.date=reader.GetDateTime(1).ToString("yyyy-MM-dd HH:mm:ss");  
+                   result.allReports.Add(temp);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return result;
+        }
         [HttpDelete]
         public CommonResponse DeleteBussinessDistrictReport(String sessionId,int reportId)
         {
@@ -500,6 +644,44 @@ namespace EarthFusion.Controllers
             catch(Exception e)
             {
                 Logging.Warning("DeleteBussinessVitalityReport","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        
+        [HttpDelete]
+        public CommonResponse DeleteTrafficAccessibilityReport(String sessionId,int reportId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.TrafficAccessibilityReport where user_id=" + user.userId+" AND ta_report_id="+reportId;
+            Logging.Info("DeleteTrafficAccessibilityReport", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("DeleteTrafficAccessibilityReport","an exception "+e.ToString());
             }
             finally
             {
