@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Utils;
+using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
 namespace EarthFusion
@@ -65,7 +66,7 @@ namespace EarthFusion
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
-            
+
             // currently the frontend register without email address
             string emailAddress = "BOOOOOM@BOOM.BOM";
 
@@ -78,7 +79,7 @@ namespace EarthFusion
             // (user_id, user_name, user_email, USER_PASSWORD_HASHED, USER_STATUS, USER_ROLE)
             // values
             // (1, 'marshmallow', 'marshmallow@anzupop.com', '5a9fee2cb0e686d7d9022dfc72ccb160d533c668059d1acfcf5da53d517f2d46', 'enabled', 'administrator');
-            
+
             // check duplicate username
             if (OracleHelpers.IsRowExistInColumnInTableName(conn, username, "SPATIAL_ADMIN.EARTHFUSION_USERS", "user_name"))
             {
@@ -180,12 +181,18 @@ namespace EarthFusion
 
         public static UserInformation ValidateSession(OracleConnection conn, string sessionId)
         {
-            List<UserInformation> result = new List<UserInformation>();
             string userId = RedisHelpers.GetString("EARTH_FUSION_SESSION_" + sessionId.ToUpper());
             if (userId == null)
             {
                 return null;
             }
+            UserInformation result = GetUserInformationById(conn, userId);
+            return result;
+        }
+
+        public static UserInformation GetUserInformationById(OracleConnection conn, string userId)
+        {
+            List<UserInformation> result = new List<UserInformation>();
             string queryString = "select * from spatial_admin.earthfusion_users where USER_ID = '" + userId + "'";
             Logging.Info("EarthFusion.SessionHelpers.GetUserInformation", "Constructed query: " + queryString);
             OracleCommand command = new OracleCommand(queryString, conn);
@@ -227,6 +234,57 @@ namespace EarthFusion
             string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
             return ValidateSession(conn, sessionId);
+        }
+
+        public static AltAccountResult DisableAccount(string sessionId, int userId)
+        {
+            AltAccountResult result = new AltAccountResult();
+            result.Operation = "DisableAccount";
+            string oracleUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_USERNAME"];
+            string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
+            UserInformation currentUser = ValidateSession(conn, sessionId);
+            if (currentUser.role != "administrator")
+            {
+                result.BoolResult = false;
+                result.Result = "Account not disabled";
+                result.Reason = "You are not the administrator.";
+                result.Message = "Log into the administrator's account and try again.";
+            }
+            else if (!OracleHelpers.IsRowExistInColumnInTableName(conn, userId.ToString(), "SPATIAL_ADMIN.EARTHFUSION_USERS", "user_id"))
+            {
+                result.BoolResult = false;
+                result.Result = "Account not disabled";
+                result.Reason = "Provided userId not found";
+                result.Message = "Check your userId and try again.";
+            }
+            else
+            {
+                try
+                {
+                    string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+                    string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+                    OracleConnection spatialAdminConn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+                    // update EARTHFUSION_USERS SET USER_STATUS = 'disabled' where USER_ID = 74725
+                    string updateString = "update EARTHFUSION_USERS SET USER_STATUS = 'disabled' where USER_ID ='" + userId + "'";
+                    Logging.Info("SessionHelpers.DisableAccount", "Constructed update: " + updateString);
+                    OracleCommand command = new OracleCommand(updateString, spatialAdminConn);
+                    spatialAdminConn.Open();
+                    result.BoolResult = true;
+                    result.Result = "Account disabled";
+                    result.Reason = "";
+                    result.Message = "Yeah.";
+                }
+                catch (Exception ex)
+                {
+                    Logging.Warning("SessionHelpers.DisableAccount", ex.ToString());
+                    result.BoolResult = false;
+                    result.Result = "Account not disabled";
+                    result.Reason = "Exception occured. Check server log.";
+                    result.Message = "If you are reading this message, please consult your system admin.";
+                }
+            }
+            return result;
         }
     }
 }
