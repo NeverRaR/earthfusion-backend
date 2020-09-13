@@ -145,5 +145,50 @@ namespace EarthFusion
             }
             return result;
         }
+
+        public static List<UserInformation> GetAllUserInformation(string sessionId)
+        {
+            List<UserInformation> contents = new List<UserInformation>();
+            string oracleUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_USERNAME"];
+            string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
+            UserInformation currentUser = SessionHelpers.ValidateSession(conn, sessionId);
+            if (currentUser.role != "administrator")
+            {
+                return null;
+            }
+            // do i need a new conn?
+            conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
+            string testQueryString = "select * from spatial_admin.earthfusion_users";
+            OracleCommand command = new OracleCommand(testQueryString, conn);
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                while (reader.Read())
+                {
+                    UserInformation temp = new UserInformation();
+                    temp.userId = reader.GetInt32(0);
+                    temp.userName = reader.GetString(1);
+                    temp.emailAddress = reader.GetString(2);
+                    temp.userPasswordHashed = reader.GetString(3);
+                    temp.accountStatus = reader.GetString(4);
+                    temp.role = reader.GetString(5);
+                    // commented this out. see description in ShopSearchResult.cs
+                    // temp.ShopClass = reader.GetString(5);
+                    contents.Add(temp);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return contents;
+        }
     }
 }

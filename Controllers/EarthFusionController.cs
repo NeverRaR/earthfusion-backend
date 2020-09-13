@@ -569,5 +569,37 @@ namespace EarthFusion.Controllers
             Logging.Info("request", "Reponse returned for AltAccountPasswordWithNewPassword");
             return httpResponse;
         }
+
+        [HttpGet]
+        public UserInformationQueryResponse GetAllAccountData(string sessionId)
+        {
+            UserInformationQueryResponse httpResponse = new UserInformationQueryResponse();
+            Logging.Info("request", "Received request for GetAllAccountData");
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            UserInformation currentUser = SessionHelpers.Validate(sessionId);
+            if (currentUser == null)
+            {
+                httpResponse.Message = "No such user.";
+                statusCode = (int)HttpStatusCode.Forbidden;
+            }
+            else if (currentUser.role != "administrator")
+            {
+                httpResponse.Message = "You are not the admin.";
+                statusCode = (int)HttpStatusCode.Forbidden;
+            }
+            else
+            {
+                httpResponse.Message = "Okay..";
+                List<UserInformation> result = AccountHelpers.GetAllUserInformation(sessionId);
+                httpResponse.Contents = result;
+            }
+            httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
+            Logging.Info("request", "Reponse returned for GetAllAccountData");
+            return httpResponse;
+        }
+
+
     }
 }
