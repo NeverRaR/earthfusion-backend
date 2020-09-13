@@ -236,10 +236,28 @@ namespace EarthFusion
             return ValidateSession(conn, sessionId);
         }
 
-        public static AltAccountResult DisableAccount(string sessionId, int userId)
+        public static AltAccountResult AltAccountStatus(string sessionId, int userId, string operation)
         {
             AltAccountResult result = new AltAccountResult();
-            result.Operation = "DisableAccount";
+            string altString;
+            if (operation == "DisableAccount")
+            {
+                altString = "disabled";
+            }
+            else if (operation == "EnableAccount")
+            {
+                altString = "enabled";
+            }
+            else
+            {
+                result.BoolResult = false;
+                result.Operation = "AltAccountStatus";
+                result.Result = "Nothing done.";
+                result.Reason = "You provided an unimplemented operation.";
+                result.Message = "Check your input.";
+                return result;
+            }
+            result.Operation = operation;
             string oracleUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_USERNAME"];
             string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
@@ -247,39 +265,48 @@ namespace EarthFusion
             if (currentUser.role != "administrator")
             {
                 result.BoolResult = false;
-                result.Result = "Account not disabled";
+                result.Result = "Account not altered";
                 result.Reason = "You are not the administrator.";
                 result.Message = "Log into the administrator's account and try again.";
             }
             else if (!OracleHelpers.IsRowExistInColumnInTableName(conn, userId.ToString(), "SPATIAL_ADMIN.EARTHFUSION_USERS", "user_id"))
             {
                 result.BoolResult = false;
-                result.Result = "Account not disabled";
+                result.Result = "Account not altered";
                 result.Reason = "Provided userId not found";
                 result.Message = "Check your userId and try again.";
             }
             else
             {
+                string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+                string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+                OracleConnection spatialAdminConn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+                spatialAdminConn.Open();
+                
+                OracleTransaction transaction;
+                // update EARTHFUSION_USERS SET USER_STATUS = 'disabled' where USER_ID = 74725
+                OracleCommand command = spatialAdminConn.CreateCommand();
+                string updateString = "update SPATIAL_ADMIN.EARTHFUSION_USERS SET USER_STATUS = '" + altString + "' where USER_ID =" + userId;
+                Logging.Info("SessionHelpers.AltAccountStatus", "Constructed update: " + updateString);
+                transaction = spatialAdminConn.BeginTransaction(IsolationLevel.ReadCommitted);
+                command.Transaction = transaction;
                 try
                 {
-                    string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
-                    string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
-                    OracleConnection spatialAdminConn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
-                    // update EARTHFUSION_USERS SET USER_STATUS = 'disabled' where USER_ID = 74725
-                    string updateString = "update EARTHFUSION_USERS SET USER_STATUS = 'disabled' where USER_ID ='" + userId + "'";
-                    Logging.Info("SessionHelpers.DisableAccount", "Constructed update: " + updateString);
-                    OracleCommand command = new OracleCommand(updateString, spatialAdminConn);
-                    spatialAdminConn.Open();
+                    command.CommandText = updateString;
+                    command.ExecuteNonQuery();
+                    transaction.Commit();
                     result.BoolResult = true;
-                    result.Result = "Account disabled";
+                    result.Result = "Account " + altString;
                     result.Reason = "";
                     result.Message = "Yeah.";
+                    spatialAdminConn.Close();
                 }
                 catch (Exception ex)
                 {
-                    Logging.Warning("SessionHelpers.DisableAccount", ex.ToString());
+                    transaction.Rollback();
+                    Logging.Warning("SessionHelpers.AltAccountStatus", ex.ToString());
                     result.BoolResult = false;
-                    result.Result = "Account not disabled";
+                    result.Result = "Account not altered";
                     result.Reason = "Exception occured. Check server log.";
                     result.Message = "If you are reading this message, please consult your system admin.";
                 }

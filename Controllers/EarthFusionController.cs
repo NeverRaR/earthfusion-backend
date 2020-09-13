@@ -35,12 +35,15 @@ namespace EarthFusion.Controllers
             else
             {
                 UserInformation userInformation = SessionHelpers.Login(username, password);
+                Logging.Info("Login(GetLoginSession)", "User id: " + userInformation.userId.ToString());
+                Logging.Info("Login(GetLoginSession)", "User name: " + userInformation.userName);
+                Logging.Info("Login(GetLoginSession)", "User status: " + userInformation.accountStatus);
                 if (userInformation == null)
                 {
                     statusCode = (int)HttpStatusCode.Forbidden;
                     httpResponse.Message = "boom";
                 }
-                else if (userInformation.accountStatus != "enabled")
+                else if (userInformation.accountStatus == "disabled")
                 {
                     statusCode = (int)HttpStatusCode.Forbidden;
                     httpResponse.Message = "Your account is disabled. Please Consult an Administrator.";
@@ -53,7 +56,7 @@ namespace EarthFusion.Controllers
                     string sessionId;
                     while (true)
                     {
-                        // fake SHA1
+                        // random hex string
                         sessionId = GenericHelpers.GetRandomHexNumber(40);
                         string sessionKeyName = "EARTH_FUSION_SESSION_" + sessionId;
                         if (RedisHelpers.GetString(sessionKeyName) == null)
@@ -541,17 +544,17 @@ namespace EarthFusion.Controllers
         }
 
         [HttpGet]
-        public AltAccountResponse DisableAccountWithUserId(string sessionId, string userId)
+        public AltAccountResponse AltAccountStatusWithUserId(string sessionId, string userId, string operation)
         {
             AltAccountResponse httpResponse = new AltAccountResponse();
-            Logging.Info("request", "Received request for DisableAccountWithUserId");
+            Logging.Info("request", "Received request for AltAccountStatusWithUserId");
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
-            httpResponse.Result = SessionHelpers.DisableAccount(sessionId, Int32.Parse(userId));
+            httpResponse.Result = SessionHelpers.AltAccountStatus(sessionId, Int32.Parse(userId), operation);
             httpResponse.StatusCode = statusCode;
             statusCode = httpResponse.Result.BoolResult ? (int)HttpStatusCode.OK : (int)HttpStatusCode.Forbidden;
             this.HttpContext.Response.StatusCode = statusCode;
-            Logging.Info("request", "Reponse returned for DisableAccountWithUserId");
+            Logging.Info("request", "Reponse returned for AltAccountStatusWithUserId");
             return httpResponse;
         }
     }
