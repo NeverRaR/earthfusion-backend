@@ -35,9 +35,6 @@ namespace EarthFusion.Controllers
             else
             {
                 UserInformation userInformation = SessionHelpers.Login(username, password);
-                Logging.Info("Login(GetLoginSession)", "User id: " + userInformation.userId.ToString());
-                Logging.Info("Login(GetLoginSession)", "User name: " + userInformation.userName);
-                Logging.Info("Login(GetLoginSession)", "User status: " + userInformation.accountStatus);
                 if (userInformation == null)
                 {
                     statusCode = (int)HttpStatusCode.Forbidden;
@@ -543,7 +540,7 @@ namespace EarthFusion.Controllers
             return httpResponse;
         }
 
-        [HttpGet]
+        [HttpPatch]
         public AltAccountResponse AltAccountStatusWithUserId(string sessionId, string userId, string operation)
         {
             AltAccountResponse httpResponse = new AltAccountResponse();
@@ -555,6 +552,21 @@ namespace EarthFusion.Controllers
             statusCode = httpResponse.Result.BoolResult ? (int)HttpStatusCode.OK : (int)HttpStatusCode.Forbidden;
             this.HttpContext.Response.StatusCode = statusCode;
             Logging.Info("request", "Reponse returned for AltAccountStatusWithUserId");
+            return httpResponse;
+        }
+
+        [HttpPatch]
+        public AltAccountResponse AltAccountPasswordWithNewPassword(string sessionId, string userId, string password)
+        {
+            AltAccountResponse httpResponse = new AltAccountResponse();
+            Logging.Info("request", "Received request for AltAccountPasswordWithNewPassword");
+            httpResponse.Date = DateTime.Now;
+            int statusCode = (int)HttpStatusCode.OK;
+            httpResponse.Result = SessionHelpers.AltAccountPassword(sessionId, Int32.Parse(userId), password);
+            httpResponse.StatusCode = statusCode;
+            statusCode = httpResponse.Result.BoolResult ? (int)HttpStatusCode.OK : (int)HttpStatusCode.Forbidden;
+            this.HttpContext.Response.StatusCode = statusCode;
+            Logging.Info("request", "Reponse returned for AltAccountPasswordWithNewPassword");
             return httpResponse;
         }
     }
