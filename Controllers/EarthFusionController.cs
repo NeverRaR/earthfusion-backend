@@ -547,7 +547,7 @@ namespace EarthFusion.Controllers
             Logging.Info("request", "Received request for AltAccountStatusWithUserId");
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
-            httpResponse.Result = SessionHelpers.AltAccountStatus(sessionId, Int32.Parse(userId), operation);
+            httpResponse.Result = AccountHelpers.AltAccountStatus(sessionId, Int32.Parse(userId), operation);
             httpResponse.StatusCode = statusCode;
             statusCode = httpResponse.Result.BoolResult ? (int)HttpStatusCode.OK : (int)HttpStatusCode.Forbidden;
             this.HttpContext.Response.StatusCode = statusCode;
@@ -562,7 +562,7 @@ namespace EarthFusion.Controllers
             Logging.Info("request", "Received request for AltAccountPasswordWithNewPassword");
             httpResponse.Date = DateTime.Now;
             int statusCode = (int)HttpStatusCode.OK;
-            httpResponse.Result = SessionHelpers.AltAccountPassword(sessionId, Int32.Parse(userId), password);
+            httpResponse.Result = AccountHelpers.AltAccountPassword(sessionId, Int32.Parse(userId), password);
             httpResponse.StatusCode = statusCode;
             statusCode = httpResponse.Result.BoolResult ? (int)HttpStatusCode.OK : (int)HttpStatusCode.Forbidden;
             this.HttpContext.Response.StatusCode = statusCode;
