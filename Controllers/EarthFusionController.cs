@@ -726,7 +726,7 @@ namespace EarthFusion.Controllers
         public BusLineNum GetBusLineNum()
         {
             BusLineNum response=new BusLineNum();
-             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select count(*)"
@@ -764,10 +764,51 @@ namespace EarthFusion.Controllers
             return response;
         }
         [HttpGet]
+        public BusStationNum GetBusStationNum()
+        {
+            BusStationNum response=new BusStationNum();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select count(*)"
+                                +" from nemo.BUS_STATION";
+            Logging.Info("GetBusStationNum", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0)
+            {
+                reader.Close();
+                conn.Close();
+                return null;
+            }
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   response.num=reader.GetInt32(0);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet]
         public BusLineNameList GetBusLineName(int offset)
         {
             BusLineNameList response=new BusLineNameList();
-             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select ln from "
@@ -805,8 +846,408 @@ namespace EarthFusion.Controllers
             }
             return response;
         }
+        [HttpPatch]
+        public CommonResponse ChangeBusLineName(String oldName,String newName,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
 
+            string UpdateString = "update  nemo.BUS_ROUTE set LINE_NAME='"+newName +"' where LINE_NAME='"+oldName+"'";
+            Logging.Info("ChangeBusLineName", "Constructed update: " + UpdateString);
 
+            // constructs command from string
+            OracleCommand command = new OracleCommand(UpdateString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("ChangeBusLineName","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpPost]
+          public CommonResponse AddStationToBusLine(String lineName,String stationName,int sequence,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string InsertString = "insert into nemo.BUS_ROUTE VALUES('"+stationName+"',"+sequence+",'"+lineName+"')";
+            Logging.Info("AddStationToBusLine", "Constructed insert: " + InsertString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(InsertString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("AddStationToBusLine","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpDelete]
+        public CommonResponse RemoveBusLine(String lineName,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.BUS_ROUTE where line_name='"+lineName+"'";
+            Logging.Info("RemoveBusLine", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("RemoveBusLine","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpDelete]
+        public CommonResponse RemoveStationFromBusLine(String lineName,String stationName,int sequence,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.BUS_ROUTE where station_name='"+stationName+"' and line_name='"+lineName+"' and sequence="+sequence;
+            Logging.Info("AddStationToBusLine", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("RemoveStationFromBusLine","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpGet] 
+        public BusRoute GetBusRoute(String lineName)
+        {
+            BusRoute response=new BusRoute();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select station_name,sequence from nemo.bus_route where line_name='"+lineName+"'";
+            Logging.Info("GetBusRoute", "Constructed query: " + QueryString);
+            response.lineName=lineName;         
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                
+               while(reader.Read())
+               {
+                 
+                   response.allStations.Add(new BusStationTag(reader.GetInt32(1),reader.GetString(0)));
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet]
+        public BusStationTagList GetBusStation(int offset)
+        {
+            BusStationTagList response=new BusStationTagList();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select sn,seq from "
+                                +"("
+                                +"select ROWNUM as rn,STATION_NAME sn,SEQUENCE seq "
+                                +"from nemo.BUS_STATION "
+                                +"where ROWNUM<"+(offset+51)
+                                +")"
+                                +"where rn>"+offset;
+            Logging.Info("GetBusStation", "Constructed query: " + QueryString);
+            response.offset=offset;
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+               while(reader.Read())
+               {
+                  response.tags.Add(new BusStationTag(reader.GetInt32(1),reader.GetString(0)));
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpDelete]
+        public CommonResponse RemoveBusStation(String stationName,int sequence,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator")
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.BUS_STATION where station_name='"+stationName+"' and sequence="+sequence;
+            Logging.Info("RemoveBusStation", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("RemoveBusStation","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpPost]
+        public CommonResponse AddBusStation(String stationName,int sequence,double log,double lat,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string InsertString = "insert into nemo.BUS_STATION VALUES('"+stationName+"',"+sequence+","
+                                +"SDO_GEOMETRY("
+                                +"2001,"
+                                +"4326,"
+                                +"SDO_POINT_TYPE("+log+","+lat+",NULL),"
+                                +"NULL,"
+                                +"NULL"
+                                +"))";
+            Logging.Info("AddBusStation", "Constructed insert: " + InsertString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(InsertString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("AddBusStation","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpGet]
+        public BusStation GetBusStationById(string stationName,int sequence)
+        {
+            BusStation response=new BusStation();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select STATION_NAME,SEQUENCE,SDO_GEOMETRY.get_wkt(geom) from nemo.BUS_STATION where station_name='"+stationName+"' and sequence="+sequence;
+            Logging.Info("GetBusStationById", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                if(reader.Read())
+                {
+                     response.statsionName=reader.GetString(0);
+                     response.sequence=reader.GetInt32(1);
+                     response.wkt=reader.GetString(2);
+                }
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return response;
+        }
+        [HttpGet]
+        public BusStationList SearchBusStation(String key)
+        {
+            BusStationList response=new BusStationList();
+            if(key==null||key.Length<1) return null;
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select STATION_NAME,SEQUENCE,SDO_GEOMETRY.get_wkt(geom) from nemo.BUS_STATION where station_name like '%"+key+"%'";
+            Logging.Info("SearchBusStation", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                while(reader.Read())
+                {
+                    response.stations.Add(new BusStation(reader.GetInt32(1),reader.GetString(0),reader.GetString(2)));
+                }
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.num=response.stations.Count();
+            return response;
+        }
         [HttpPatch]
         public AltAccountResponse AltAccountStatusWithUserId(string sessionId, string userId, string operation)
         {
