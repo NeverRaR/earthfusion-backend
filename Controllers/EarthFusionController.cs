@@ -716,5 +716,89 @@ namespace EarthFusion.Controllers
             Logging.Info("request", "Reponse returned for ShopSearchExact");
             return httpResponse;
         }
+        [HttpGet]
+        public BusLineNum GetBusLineNum()
+        {
+            BusLineNum response=new BusLineNum();
+             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select count(*)"
+                                +" from (select distinct LINE_NAME from nemo.BUS_ROUTE a )";
+            Logging.Info("GetBusLineNum", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0)
+            {
+                reader.Close();
+                conn.Close();
+                return null;
+            }
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   response.num=reader.GetInt32(0);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet]
+        public BusLineNameList GetBusLineName(int offset)
+        {
+            BusLineNameList response=new BusLineNameList();
+             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select ln from "
+                                +"("
+                                +"select ROWNUM as rn,LINE_NAME ln "
+                                +"from (select distinct LINE_NAME from nemo.BUS_ROUTE)"
+                                +"where ROWNUM<"+(offset+51)
+                                +")"
+                                +"where rn>"+offset;
+            Logging.Info("GetBusLineName", "Constructed query: " + QueryString);
+            response.offset=offset;
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                
+               while(reader.Read())
+               {
+                 
+                   response.names.Add(reader.GetString(0));
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        
     }
 }
