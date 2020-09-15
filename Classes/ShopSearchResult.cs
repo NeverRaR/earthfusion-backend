@@ -18,7 +18,11 @@ namespace EarthFusion
         
         // area
         public string District { get; set; }
-        
+
+        //telephone
+        public string telephone{get;set;}
+
+        public int id{get;set;}
         // detail
         // 457 approved that this should be removed in order to get unique result 
         // public string ShopClass { get; set; }

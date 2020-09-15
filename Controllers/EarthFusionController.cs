@@ -244,6 +244,25 @@ namespace EarthFusion.Controllers
             tag.date=date;
             return tag;            
         }
+        [HttpPost]
+        public ReportTag UploadGDPReport(string sessionId,String name,String date, String arima, String holtWinters, String holt, int bYear, int eYear)
+        {
+            UserInformation user = SessionHelpers.Validate(sessionId);
+            if (user == null) return null;
+            GDPReport report = new GDPReport();
+            report.userId = user.userId;
+            report.date = date;
+            report.arima = arima;
+            report.holt = holt;
+            report.holtWinters = holtWinters;
+            report.bYear = bYear;
+            report.eYear = eYear;
+            report.name = name;
+            ReportTag tag = new ReportTag();
+            tag.reportId = OracleHelpers.InsertGDPReport(report);
+            tag.date = date;
+            return tag;
+        }
         [HttpGet]
         public BussinessVitalityReport AnalysisBussinessVitalityReport(string sessionId, double ullog, double ullat, double lrlog, double lrlat, int rowNum, int colNum)
         {
@@ -462,6 +481,51 @@ namespace EarthFusion.Controllers
             conn.Close();
             return report;
         }
+        [HttpGet]
+        public GDPReport GetGDPReportByReportID(string sessionId, int reportId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            if (user == null) return null;
+            GDPReport report = new GDPReport();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string QueryString = "select * from nemo.GDPReport where user_id=" + user.userId + " AND GDP_report_id=" + reportId;
+            Logging.Info("GetGDPReportByReportID", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if (reader.RowSize == 0) return null;
+            try
+            {
+                while (reader.Read())
+                {
+                    report.reportId = reader.GetInt32(0);
+                    report.userId = reader.GetInt32(1);
+                    report.bYear = reader.GetInt32(2);
+                    report.eYear = reader.GetInt32(3);
+                    report.holtWinters = reader.GetString(4);
+                    report.arima = reader.GetString(5);
+                    report.holt = reader.GetString(6);
+                    report.name = reader.GetString(7);
+                    report.date = reader.GetDateTime(8).ToString("yyyy-MM-dd HH:mm:ss");
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return report;
+        }
 
         [HttpGet]
         public UserIDWithAllReport GetAllBussinessVitalityReport(string sessionId)
@@ -555,6 +619,46 @@ namespace EarthFusion.Controllers
 
             string QueryString = "select ta_report_id,ta_report_time from nemo.TrafficAccessibilityReport where user_id=" + user.userId;
             Logging.Info("GetAllTrafficAccessibilityReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+            UserIDWithAllReport result=new UserIDWithAllReport();
+            result.userId=user.userId;
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                while (reader.Read())
+                {
+                   ReportTag temp=new ReportTag();
+                   temp.reportId=reader.GetInt32(0);
+                   temp.date=reader.GetDateTime(1).ToString("yyyy-MM-dd HH:mm:ss");  
+                   result.allReports.Add(temp);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return result;
+        }
+        [HttpGet]
+        public UserIDWithAllReport GetAllGDPReport(string sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            if(user==null) return null;
+            TrafficAccessibilityReport report=new TrafficAccessibilityReport();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string QueryString = "select GDP_report_id,GDP_report_time from nemo.GDPReport where user_id=" + user.userId;
+            Logging.Info("GetAllGDPReport", "Constructed query: " + QueryString);
 
             // constructs command from string
             OracleCommand command = new OracleCommand(QueryString, conn);
@@ -696,6 +800,43 @@ namespace EarthFusion.Controllers
             response.message="OK";
             return response;
         }
+        [HttpDelete]
+        public CommonResponse DeleteGDPReport(String sessionId,int reportId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.GDPReport where user_id=" + user.userId+" AND GDP_report_id="+reportId;
+            Logging.Info("DeleteGDPReport", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("DeleteGDPReport","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
 
         [HttpGet]
         public ShopSearchResponse SearchShopByExactName(string sessionId, string query)
@@ -805,6 +946,88 @@ namespace EarthFusion.Controllers
             return response;
         }
         [HttpGet]
+        public ShopNum GetShopNum()
+        {
+            ShopNum response=new ShopNum();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select count(*)"
+                                +" from nemo.SHANGHAI_SHOPS";
+            Logging.Info("GetShopNum", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0)
+            {
+                reader.Close();
+                conn.Close();
+                return null;
+            }
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   response.num=reader.GetInt32(0);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet]
+        public RegionNum GetRegionNum()
+        {
+            RegionNum response=new RegionNum();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select count(*)"
+                                +" from (select distinct COUNTRY_OR_REGION from nemo.gdp_record a )";
+            Logging.Info("GetRegionNum", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            if(reader.RowSize==0)
+            {
+                reader.Close();
+                conn.Close();
+                return null;
+            }
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   response.num=reader.GetInt32(0);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet]
         public BusLineNameList GetBusLineName(int offset)
         {
             BusLineNameList response=new BusLineNameList();
@@ -846,6 +1069,180 @@ namespace EarthFusion.Controllers
             }
             return response;
         }
+        [HttpGet]
+        public RegionList GetRegionName(int offset)
+        {
+            RegionList response=new RegionList();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select cr from "
+                                +"("
+                                +"select ROWNUM as rn,COUNTRY_OR_REGION cr "
+                                +"from (select distinct COUNTRY_OR_REGION from nemo.gdp_record)"
+                                +"where ROWNUM<"+(offset+51)
+                                +")"
+                                +"where rn>"+offset;
+            Logging.Info("GetBusLineName", "Constructed query: " + QueryString);
+            response.offset=offset;
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                
+               while(reader.Read())
+               {
+                 
+                   response.names.Add(reader.GetString(0));
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet]
+        public ShopTagList GetShopTag(int offset)
+        {
+            ShopTagList response=new ShopTagList();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select sn,lon,lat,studio_id from "
+                                +"("
+                                +"select ROWNUM as rn,NAME sn,lon,lat,studio_id "
+                                +"from nemo.SHANGHAI_SHOPS "
+                                +"where ROWNUM<"+(offset+51)
+                                +")"
+                                +"where rn>"+offset;
+            Logging.Info("GetShopName", "Constructed query: " + QueryString);
+            response.offset=offset;
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                
+               while(reader.Read())
+               {
+                   ShopTag temp=new ShopTag();
+                   temp.name=reader.GetString(0);
+                   temp.Longitude=reader.GetFloat(1);
+                   temp.Latitude=reader.GetFloat(2);
+                   temp.id=reader.GetInt32(3);
+                   response.tags.Add(temp);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet]
+        public ShopSearchResult GetShopDetail(int id)
+        {
+            string oracleUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_USERNAME"];
+            string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
+
+            // conn to use
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleUsername, oraclePassword, false);
+
+            // List to return
+            ShopSearchResult response = new ShopSearchResult();
+
+            string testQueryString = "SELECT DISTINCT name, address, lat, lon, area,telephone,studio_id from nemo.SHANGHAI_SHOPS where studio_id="+id;
+
+            Logging.Info("ShopSearchExact.Search", "Constructed query: " + testQueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(testQueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                if(reader.Read())
+                {
+                    response.ShopName = reader.GetString(0);
+                    response.ShopAddress = reader.GetString(1);
+                    response.Latitude = reader.GetDouble(2);
+                    response.Longitude = reader.GetDouble(3);
+                    if(!reader.IsDBNull(4))response.District = reader.GetString(4);
+                    if(!reader.IsDBNull(5))response.telephone=reader.GetString(5);
+                    response.id=reader.GetInt32(6);
+                }
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            conn.Close();
+            return response;
+        }
+        [HttpGet]
+        public RegionWithGDP GetRegionWithGDP(String name)
+        {
+            RegionWithGDP response=new RegionWithGDP();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select COUNTRY_OR_REGION,YEAR,GDP from "
+                               +"nemo.gdp_record "
+                               +"where COUNTRY_OR_REGION='"+name+"'";
+            Logging.Info("GetRegionWithGDP", "Constructed query: " + QueryString);
+            response.name=name;
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                
+               while(reader.Read())
+               {
+                   GDPTag temp=new GDPTag();
+                   temp.name=reader.GetString(0);
+                   temp.year=reader.GetInt32(1);
+                   temp.GDP=reader.GetInt64(2);
+                   response.tags.Add(temp);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        
         [HttpPatch]
         public CommonResponse ChangeBusLineName(String oldName,String newName,String sessionId)
         {
@@ -890,7 +1287,125 @@ namespace EarthFusion.Controllers
             return response;
         }
         [HttpPost]
-          public CommonResponse AddStationToBusLine(String lineName,String stationName,int sequence,String sessionId)
+        public CommonResponse AddGDPTag(String sessionId,String name,int year,Int64 GDP)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string InsertString = "insert into nemo.gdp_record VALUES('"+name+"',"+year+","+GDP+")";
+            Logging.Info("AddGDPTag", "Constructed insert: " + InsertString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(InsertString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("AddGDPTag","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpPost]
+        public CommonResponse AddShop(String sessionId,String shopName,String shopAddress,double log,double lat,String district,String telephone)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            int id=0;
+            string QueryString = "select max(studio_id) "
+                                +" from nemo.SHANGHAI_SHOPS a "; 
+            Logging.Info("AddShop", "Constructed query: " + QueryString);
+                  
+           
+
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   if(!reader.IsDBNull(0))
+                   {
+                        id=1+reader.GetInt32(0);
+                   }
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            string InsertString = "insert into nemo.SHANGHAI_SHOPS VALUES(null,'"+shopName+"','"+shopAddress
+                                 +"',"+lat+","+log+",null,null,'"+district+"','"+telephone+"',null,"+id+","
+                                 +"SDO_GEOMETRY("
+                                 +"2001,"
+                                 +"4326,"
+                                 +"SDO_POINT_TYPE("+log+","+lat+",NULL),"
+                                 +"NULL,"
+                                 +"NULL"
+                                 +"))";
+            Logging.Info("AddShop", "Constructed insert: " + InsertString);
+            command=new OracleCommand(InsertString, conn);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("AddShop","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpPost]
+        public CommonResponse AddStationToBusLine(String lineName,String stationName,int sequence,String sessionId)
         {
             UserInformation user = GetSession(sessionId).userInformation;
             CommonResponse response=new CommonResponse();
@@ -923,6 +1438,49 @@ namespace EarthFusion.Controllers
             catch(Exception e)
             {
                 Logging.Warning("AddStationToBusLine","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpDelete]
+        public CommonResponse RemoveShop(int id,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.SHANGHAI_SHOPS where studio_id="+id+"";
+            Logging.Info("RemoveShop", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("RemoveShop","an exception "+e.ToString());
             }
             finally
             {
@@ -1018,6 +1576,49 @@ namespace EarthFusion.Controllers
             response.message="OK";
             return response;
         }
+         [HttpDelete]
+        public CommonResponse RemoveGDPTag(String name,int year,String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string DeleteString = "delete from nemo.GDP_RECORD where COUNTRY_OR_REGION='"+name+"' and year="+year;
+            Logging.Info("RemoveGDPTag", "Constructed delete: " + DeleteString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(DeleteString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("RemoveGDPTag","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
         [HttpGet] 
         public BusRoute GetBusRoute(String lineName)
         {
@@ -1043,6 +1644,42 @@ namespace EarthFusion.Controllers
                {
                  
                    response.allStations.Add(new BusStationTag(reader.GetInt32(1),reader.GetString(0)));
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            return response;
+        }
+        [HttpGet] 
+        public StationWithLine GetStationWithLine(String stationName,int sequence)
+        {
+            StationWithLine response=new StationWithLine();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select line_name from nemo.bus_route where station_name='"+stationName+"' and sequence="+sequence;
+            Logging.Info("GetBusRoute", "Constructed query: " + QueryString);
+            response.stationName=stationName;
+            response.sequence=sequence;         
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                
+               while(reader.Read())
+               {
+                 
+                   response.allLines.Add(reader.GetString(0));
                }
 
             }
@@ -1091,6 +1728,41 @@ namespace EarthFusion.Controllers
                 // always call Close when done reading.
                 reader.Close();
             }
+            return response;
+        }
+
+        [HttpGet]
+        public BusStationList GetAllBusStation()
+        {
+            BusStationList response=new BusStationList();
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select STATION_NAME,SEQUENCE,SDO_GEOMETRY.get_wkt(geom) from nemo.BUS_STATION";
+            Logging.Info("GetAllBusStation", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+            OracleDataReader reader = command.ExecuteReader();
+            try
+            {
+                while(reader.Read())
+                {
+                    BusStation temp=new BusStation();
+                    temp.statsionName=reader.GetString(0);
+                    temp.sequence=reader.GetInt32(1);
+                    temp.wkt=reader.GetString(2);
+                    response.stations.Add(temp);
+                }
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.num=response.stations.Count;
             return response;
         }
         [HttpDelete]
