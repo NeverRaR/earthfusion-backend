@@ -419,7 +419,7 @@ namespace Utils
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
-            string QueryString = "select count(*)"
+            string QueryString = "select max(bd_report_id) "
                                 +" from nemo.BUSSINESSDISTRICTREPORT a ";
             Logging.Info("InsertBussinessDistrictReport", "Constructed query: " + QueryString);
 
@@ -432,20 +432,15 @@ namespace Utils
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
             int ans=0;
-            if(reader.RowSize==0)
-            {
-                reader.Close();
-                conn.Close();
-                return -1;
-            }
             try
             {
-                
                if(reader.Read())
                {
-                   ans=reader.GetInt32(0);
+                   if(!reader.IsDBNull(0))
+                   {
+                        ans=reader.GetInt32(0);
+                   }
                }
-
             }
             finally
             {
@@ -481,7 +476,7 @@ namespace Utils
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
-            string QueryString = "select count(*)"
+            string QueryString = "select max(bv_report_id) "
                                 +" from nemo.BUSSINESSVITALITYREPORT a ";
             Logging.Info("InsertBussinessDistrictReport", "Constructed query: " + QueryString);
 
@@ -494,20 +489,16 @@ namespace Utils
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
             int ans=0;
-            if(reader.RowSize==0)
-            {
-                reader.Close();
-                conn.Close();
-                return -1;
-            }
             try
             {
                 
                if(reader.Read())
                {
-                   ans=reader.GetInt32(0);
+                   if(!reader.IsDBNull(0))
+                   {
+                        ans=reader.GetInt32(0);
+                   }
                }
-
             }
             finally
             {
@@ -539,12 +530,12 @@ namespace Utils
             }
             return report.reportId;
         }
-         public static int InsertTrafficAccessibilityReport(TrafficAccessibilityReport report)
+        public static int InsertTrafficAccessibilityReport(TrafficAccessibilityReport report)
         {
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
-            string QueryString = "select count(*)"
+            string QueryString = "select max(ta_report_id) "
                                 +" from nemo.TrafficAccessibilityREPORT a ";
             Logging.Info("InsertBussinessDistrictReport", "Constructed query: " + QueryString);
 
@@ -557,18 +548,15 @@ namespace Utils
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
             int ans=0;
-            if(reader.RowSize==0)
-            {
-                reader.Close();
-                conn.Close();
-                return -1;
-            }
             try
             {
                 
                if(reader.Read())
                {
-                   ans=reader.GetInt32(0);
+                   if(!reader.IsDBNull(0))
+                   {
+                        ans=reader.GetInt32(0);
+                   }
                }
 
             }
@@ -595,6 +583,65 @@ namespace Utils
             catch(Exception e)
             {
                 Logging.Warning("InsertTrafficAccessibilityReport","an exception "+e.Message);
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return report.reportId;
+        }
+        public static int InsertGDPReport(GDPReport report)
+        {
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select max(GDP_report_id) "
+                                +" from nemo.GDPReport a ";
+            Logging.Info("InsertGDPReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            int ans=0;
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   if(!reader.IsDBNull(0))
+                   {
+                        ans=reader.GetInt32(0);
+                   }
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            Logging.Info("InsertGDPReport",ans.ToString());
+            report.reportId=ans+1;
+            string InsertString="INSERT INTO NEMO.GDPReport"
+                               +" VALUES("+report.reportId+","+report.userId+","
+                               +report.bYear+","+report.eYear
+                               +",'"+report.holtWinters+"','"+report.arima+"','"
+                               +report.holt+"','"+report.name+"',"
+                               +"to_date('"+report.date+"','yyyy-mm-dd hh24:mi:ss'))";
+            command=new OracleCommand(InsertString,conn);
+            Logging.Info("InsertGDPReport", "Constructed insert: " + InsertString);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("InsertGDPReport","an exception "+e.Message);
             }
             finally
             {
