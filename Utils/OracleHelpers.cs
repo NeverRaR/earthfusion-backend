@@ -273,7 +273,7 @@ namespace Utils
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select count(*)"
-                                +"from nemo.BUS_STATION_POINT a "
+                                +"from nemo.BUS_STATION a "
                                 +"where MDSYS.sdo_filter(a.geom,SDO_GEOMETRY("
                                 +"2003,"
                                 +"4326,"
@@ -371,7 +371,7 @@ namespace Utils
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
             string QueryString = "select count(*)"
-                                +"from nemo.BUS_STATION_POINT a "
+                                +"from nemo.BUS_STATION a "
                                 +"where MDSYS.SDO_WITHIN_DISTANCE(a.geom,SDO_GEOMETRY("
                                 +"2001,"
                                 +"4326,"
@@ -539,5 +539,69 @@ namespace Utils
             }
             return report.reportId;
         }
+         public static int InsertTrafficAccessibilityReport(TrafficAccessibilityReport report)
+        {
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+            string QueryString = "select count(*)"
+                                +" from nemo.TrafficAccessibilityREPORT a ";
+            Logging.Info("InsertBussinessDistrictReport", "Constructed query: " + QueryString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(QueryString, conn);
+
+            // open db connection
+            conn.Open();
+
+            // then, executes the data reader
+            OracleDataReader reader = command.ExecuteReader();
+            int ans=0;
+            if(reader.RowSize==0)
+            {
+                reader.Close();
+                conn.Close();
+                return -1;
+            }
+            try
+            {
+                
+               if(reader.Read())
+               {
+                   ans=reader.GetInt32(0);
+               }
+
+            }
+            finally
+            {
+                // always call Close when done reading.
+                reader.Close();
+            }
+            Logging.Info("InsertTrafficAccessibilityReport",ans.ToString());
+            report.reportId=ans+1;
+            string InsertString="INSERT INTO NEMO.TrafficAccessibilityREPORT"
+                               +" VALUES("+report.userId+","+report.reportId+","
+                               +report.ulLongitude+","+report.ulLatitude+","
+                               +report.lrLongitude+","+report.lrLatitude+","
+                               +"to_date('"+report.date+"','yyyy-mm-dd hh24:mi:ss'),"
+                               +","+report.rowNum+","+report.colNum
+                               +",'"+report.trafficAccessibility+"','"+report.busAccessibility+"')";
+            command=new OracleCommand(InsertString,conn);
+            Logging.Info("InsertTrafficAccessibilityReport", "Constructed insert: " + InsertString);
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("InsertTrafficAccessibilityReport","an exception "+e.Message);
+            }
+            finally
+            {
+                conn.Close();
+            }
+            return report.reportId;
+        }
     }
+    
 }
