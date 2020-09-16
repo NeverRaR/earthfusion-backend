@@ -43,7 +43,8 @@ namespace EarthFusion
                     if(!reader.IsDBNull(5))temp.telephone=reader.GetString(5);
                     temp.id=reader.GetInt32(6);
                     // commented this out. see description in ShopSearchResult.cs
-                    // temp.ShopClass = reader.GetString(5);
+                    // now ok.
+                    temp.ShopClass = reader.GetString(5);
                     contents.Add(temp);
                 }
             }
