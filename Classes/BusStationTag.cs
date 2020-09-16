@@ -10,10 +10,10 @@ namespace EarthFusion
         public BusStationTag(int seq,String name)
         {
             sequence=seq;
-            statsionName=name;
+            stationName=name;
         }
         public int sequence { get; set; }
-        public String statsionName { get; set; }
+        public String stationName { get; set; }
 
     }
 }
