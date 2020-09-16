@@ -1752,7 +1752,7 @@ namespace EarthFusion.Controllers
                 while(reader.Read())
                 {
                     BusStation temp=new BusStation();
-                    temp.statsionName=reader.GetString(0);
+                    temp.stationName=reader.GetString(0);
                     temp.sequence=reader.GetInt32(1);
                     temp.wkt=reader.GetString(2);
                     response.stations.Add(temp);
@@ -1878,7 +1878,7 @@ namespace EarthFusion.Controllers
             {
                 if(reader.Read())
                 {
-                     response.statsionName=reader.GetString(0);
+                     response.stationName=reader.GetString(0);
                      response.sequence=reader.GetInt32(1);
                      response.wkt=reader.GetString(2);
                 }
