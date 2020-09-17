@@ -18,7 +18,8 @@ namespace EarthFusion
             // List to return
             List<ShopSearchResult> contents = new List<ShopSearchResult>();
 
-            string testQueryString = "SELECT DISTINCT name, address, lat, lon, area,telephone,studio_id from nemo.SHANGHAI_SHOPS where lower(name) LIKE '%" + query.ToLower() + "%'";
+            string testQueryString = "SELECT DISTINCT name, address, lat, lon, area,telephone,studio_id from nemo.SHANGHAI_SHOPS "
+                                   +"where lower(name) LIKE '%" + query.ToLower() + "%'";
 
             Logging.Info("ShopSearchExact.Search", "Constructed query: " + testQueryString);
 
@@ -42,8 +43,6 @@ namespace EarthFusion
                     if(!reader.IsDBNull(4))temp.District = reader.GetString(4);
                     if(!reader.IsDBNull(5))temp.telephone=reader.GetString(5);
                     temp.id=reader.GetInt32(6);
-                    // commented this out. see description in ShopSearchResult.cs
-                    // temp.ShopClass = reader.GetString(5);
                     contents.Add(temp);
                 }
             }
