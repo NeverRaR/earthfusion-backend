@@ -9,6 +9,7 @@ namespace EarthFusion
     {
         public static List<ShopSearchResult> Search(string query)
         {
+            if(query==null) query="";
             string oracleUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_USERNAME"];
             string oraclePassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_DB_PASSWORD"];
 
