@@ -945,7 +945,7 @@ namespace EarthFusion.Controllers
             }
             return response;
         }
-        [HttpGet]
+        [HttpDelete]
         public CommonResponse KillDeadSession(String sessionId)
         {
             UserInformation user = GetSession(sessionId).userInformation;
