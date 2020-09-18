@@ -82,7 +82,7 @@ namespace Utils
                         try
                         {
                             name = reader.GetString(1);
-                            name +=reader.GetInt32(2)+"号站";
+                            if(hasStationName)name +=reader.GetInt32(2)+"号站";
                         }
                         catch (System.InvalidCastException e)
                         {
