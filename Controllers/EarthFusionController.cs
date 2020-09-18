@@ -973,7 +973,7 @@ namespace EarthFusion.Controllers
                                             execute immediate 'alter system kill session '''||x.sid||','||x.serial#||'''';
                                         end loop;
                                     end;";
-            Logging.Info("Commit", "Constructed delete: " + CommitString);
+            Logging.Info("KillDeadSession", "Constructed delete: " + CommitString);
 
             // constructs command from string
             OracleCommand command = new OracleCommand(CommitString, conn);
@@ -986,7 +986,7 @@ namespace EarthFusion.Controllers
             }
             catch(Exception e)
             {
-                Logging.Warning("RemoveShop","an exception "+e.ToString());
+                Logging.Warning("KillDeadSession","an exception "+e.ToString());
             }
             finally
             {
