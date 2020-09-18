@@ -19,17 +19,14 @@ namespace Utils
             conn.Close();
             return testResult;
         }
-        public static List<WktWithName> WktPullTest(string username, string passwd, string tableName, int rowCount)
+        public static List<WktWithName> WktPullTest(string username, string passwd, string tableName, int rowCount,double ullog,double ullat,double lrlog,double lrlat,int isAll)
         {
             // conn to use
             OracleConnection conn = OracleHelpers.GetOracleConnection(username, passwd, false);
 
             // List to return
             List<WktWithName> contents = new List<WktWithName>();
-
-            string testQueryString = ("select SDO_GEOMETRY.get_wkt(geom) from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
-
-            // has geom?
+                        // has geom?
             bool hasGeom = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "GEOM".ToString());
             if (!hasGeom)
             {
@@ -38,11 +35,27 @@ namespace Utils
 
             // has name?
             bool hasName = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "NAME".ToString());
-            if (hasName)
+            bool hasStationName=OracleHelpers.IsColumnNameExistInTableName(conn,tableName,"STATION_NAME");
+            string testQueryString = "select SDO_GEOMETRY.get_wkt(geom) ";
+            if(hasStationName) testQueryString+=",STATION_NAME ";
+            else if(hasName) testQueryString+=",NAME ";
+
+            
+
+            testQueryString +=" from nemo." + tableName + " a ";
+            if(isAll==0)
             {
-                // also grab the name.
-                testQueryString = ("select SDO_GEOMETRY.get_wkt(geom), NAME from nemo." + tableName + " where rownum < " + (rowCount + 1).ToString()).ToString();
+                    testQueryString+= " where "
+                                   + " MDSYS.sdo_filter(a.geom,SDO_GEOMETRY("
+                                   + " 2003,"
+                                   + " 4326,"
+                                   + " NULL,"
+                                   + " SDO_ELEM_INFO_ARRAY(1,1003,3),"
+                                   + " SDO_ORDINATE_ARRAY(" + ullog + " , " + lrlat + "," + lrlog + " , " + ullat + ")"
+                                   + " )"
+                                   + " )='TRUE'";
             }
+
 
             Logging.Info("WktPullTest", "Constructed query: " + testQueryString);
 
@@ -54,9 +67,10 @@ namespace Utils
 
             // then, executes the data reader
             OracleDataReader reader = command.ExecuteReader();
+            int count=0;
             try
             {
-                while (reader.Read())
+                while (reader.Read()&&count<rowCount)
                 {
                     // Console.WriteLine(reader.GetString(0));
                     string wkt = reader.GetString(0);
@@ -71,11 +85,11 @@ namespace Utils
                         }
                         catch (System.InvalidCastException e)
                         {
-                            Logging.Warning("WktPullTest", "Experienced an InvalidCastException");
-                            if (e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault() == "System.InvalidCastException: Column contains NULL data")
-                            {
-                                Logging.Warning("WktPullTest", "Experienced a null string");
-                            }
+                            //Logging.Warning("WktPullTest", "Experienced an InvalidCastException");
+                            //if (e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault() == "System.InvalidCastException: Column contains NULL data")
+                            //{
+                            //   Logging.Warning("WktPullTest", "Experienced a null string");
+                            //}
                             name = null;
                         }
                     }
@@ -83,6 +97,7 @@ namespace Utils
                     temp.wkt = wkt;
                     temp.name = name;
                     contents.Add(temp);
+                    count++;
                 }
             }
             finally

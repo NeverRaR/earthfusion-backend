@@ -48,31 +48,24 @@ namespace OracleTest.Controllers
         }
 
         [HttpGet]
-        public OracleWktResponse PullFromTableWithNum(string Username, string Password, string Tablename, int RowCount)
+        public OracleWktResponse PullFromTableWithNum(string Username, string Password, string Tablename, int RowCount,double ullog,double ullat,double lrlog,double lrlat,int isAll=0)
         {
-            OracleConnectionTestPullRequest request = new OracleConnectionTestPullRequest
-            {
-                Username = Username,
-                Password = Password,
-                Tablename = Tablename,
-                RowCount = RowCount
-            };
             OracleWktResponse httpResponse = new OracleWktResponse();
             string message = "Okay....";
             int statusCode;
-            httpResponse.TableName = request.Tablename;
+            httpResponse.TableName = Tablename;
             httpResponse.Date = DateTime.Now;
             List<WktWithName> result;
 
             Logging.Info("request", "Received request for PullFromTableWithNum");
-            Logging.Info("PullFromTableWithNum", "Tablename: " + request.Tablename);
-            Logging.Info("PullFromTableWithNum", "Row count to pull from: " + request.RowCount.ToString());
+            Logging.Info("PullFromTableWithNum", "Tablename: " + Tablename);
+            Logging.Info("PullFromTableWithNum", "Row count to pull from: " + RowCount.ToString());
             Logging.Info("PullFromTableWithNum", "Pulling process begins.");
 
             try
             {
                 // get result
-                result = OracleTests.WktPullTest(request.Username, request.Password, request.Tablename, request.RowCount);
+                result = OracleTests.WktPullTest(Username, Password, Tablename, RowCount,ullog,ullat,lrlog,lrlat,isAll);
 
                 // if no row seleted...
                 if (result.Count() == 0)

@@ -169,8 +169,7 @@ namespace Utils
             string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
             string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
             OracleConnection conn = GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
-            string QueryString = "select count(*)"
-
+            string QueryString  ="select count(*)"
                                 +"from nemo.SHANGHAI_SHOPS a "
                                 +"where MDSYS.SDO_WITHIN_DISTANCE(a.geom,SDO_GEOMETRY("
                                 +"2001,"
