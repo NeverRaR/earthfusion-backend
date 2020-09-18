@@ -116,6 +116,78 @@ namespace OracleTest.Controllers
             return httpResponse;
         }
 
+        [HttpGet]
+        public OracleWktResponse PullFromTableWithRange(string Username, string Password, string Tablename, int leftRange, int rightRange)
+        {
+            OracleWktResponse httpResponse = new OracleWktResponse();
+            string message = "Okay....";
+            int statusCode;
+            httpResponse.TableName = Tablename;
+            httpResponse.Date = DateTime.Now;
+            List<WktWithName> result;
+
+            Logging.Info("request", "Received request for PullFromTableWithRange");
+            Logging.Info("PullFromTableWithRange", "Tablename: " + Tablename);
+            Logging.Info("PullFromTableWithRange", "Tablename: " + Tablename);
+            Logging.Info("PullFromTableWithRange", "Row count to pull from: " + (rightRange - leftRange + 1).ToString());
+            Logging.Info("PullFromTableWithRange", "Left range: " + leftRange.ToString());
+            Logging.Info("PullFromTableWithRange", "Right range: " + rightRange.ToString());
+            Logging.Info("PullFromTableWithRange", "Pulling process begins.");
+
+            try
+            {
+                // get result
+                result = OracleTests.WktPullTestWithRange(Username, Password, Tablename, leftRange, rightRange);
+
+                // if no row seleted...
+                if (result.Count() == 0)
+                {
+                    Logging.Warning("PullFromTableWithRange", "Pulling process returned with 0 row when trying to pull from " + Tablename);
+                    message = "No row(s) selected. There maybe no geometry data in column GEOM or that column doesn't exist.";
+                }
+                statusCode = (int)HttpStatusCode.OK;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException e)
+            {
+                // if something happened within Oracle
+                message = e.ToString().Split(new[] { '\r', '\n' }).FirstOrDefault();
+                statusCode = (int)HttpStatusCode.InternalServerError;
+                Logging.Warning("PullFromTableWithRange", "Pulling process got something bad when pulling from " + Tablename + " with a message of " + message);
+                result = new List<WktWithName>();
+            }
+            Logging.Info("PullFromTableWithRange", "Pulling process ends.");
+
+            // constructs content
+            foreach (WktWithName content in result)
+            {
+                httpResponse.Contents.Add(content);
+            }
+            // // or should i just use the result?
+            // httpResponse.Contents = result;
+
+            // tests shows there are no statical difference by the means of time. 
+
+            // restore table information with predefined dict (Classes/KnownTables.cs)
+            try
+            {
+                GeomTableTypes currentTableType = OracleTest.Globals.knownTables.knownTableType[Tablename];
+                httpResponse.GeomTypeId = currentTableType.GeomTypeId;
+                httpResponse.LineOrBoundaryTypeId = currentTableType.LineOrBoundaryTypeId;
+                httpResponse.EntityTypeId = currentTableType.EntityTypeId;
+                Logging.Info("PullFromTableWithRange", "Got information found for table " + Tablename);
+            }
+            catch (KeyNotFoundException)
+            {
+                Logging.Warning("PullFromTableWithRange", "No information found for table " + Tablename);
+            }
+
+            httpResponse.Message = message;
+            httpResponse.StatusCode = statusCode;
+            this.HttpContext.Response.StatusCode = statusCode;
+            Logging.Info("request", "Reponse returned for PullFromTableWithNum");
+            return httpResponse;
+        }
+
         // [HttpGet]
         // // This is for test purpose only
         // public string CheckWhetherColumnNameExistsInTable(string username, string passwd, string tableName, string columnName)
