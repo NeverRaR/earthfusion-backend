@@ -946,6 +946,57 @@ namespace EarthFusion.Controllers
             return response;
         }
         [HttpGet]
+        public CommonResponse KillDeadSession(String sessionId)
+        {
+            UserInformation user = GetSession(sessionId).userInformation;
+            CommonResponse response=new CommonResponse();
+            response.statusCode=403;
+            response.message="sessionId is invalid.";
+            response.date=DateTime.Now;
+            if(user==null) return response;
+            if(user.role!="administrator") 
+            {
+                response.statusCode=401;
+                response.message="user is not a admin.";
+                return response;
+            }
+            string oracleSpatialAdminUsername = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_USERNAME"];
+            string oracleSpatialAdminPassword = earthfusion_backend.Globals.config["EARTH_FUSION_SPATIAL_ADMIN_DB_PASSWORD"];
+            OracleConnection conn = OracleHelpers.GetOracleConnection(oracleSpatialAdminUsername, oracleSpatialAdminPassword, false);
+
+            string CommitString = @"begin
+                                        for x in 
+                                            ( select s.sid sid,s.serial# serial#
+                                            from v$locked_object l,dba_objects o ,v$session s
+                                            where l.object_id　=　o.object_id and l.session_id=s.sid)
+                                        loop
+                                            execute immediate 'alter system kill session '''||x.sid||','||x.serial#||'''';
+                                        end loop;
+                                    end;";
+            Logging.Info("Commit", "Constructed delete: " + CommitString);
+
+            // constructs command from string
+            OracleCommand command = new OracleCommand(CommitString, conn);
+
+            // open db connection
+            conn.Open();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch(Exception e)
+            {
+                Logging.Warning("RemoveShop","an exception "+e.ToString());
+            }
+            finally
+            {
+                conn.Close();
+            }
+            response.statusCode=200;
+            response.message="OK";
+            return response;
+        }
+        [HttpGet]
         public ShopNum GetShopNum()
         {
             ShopNum response=new ShopNum();
