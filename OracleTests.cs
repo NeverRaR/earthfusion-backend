@@ -37,7 +37,7 @@ namespace Utils
             bool hasName = OracleHelpers.IsColumnNameExistInTableName(conn, tableName, "NAME".ToString());
             bool hasStationName=OracleHelpers.IsColumnNameExistInTableName(conn,tableName,"STATION_NAME");
             string testQueryString = "select SDO_GEOMETRY.get_wkt(geom) ";
-            if(hasStationName) testQueryString+=",STATION_NAME ";
+            if(hasStationName) testQueryString+=",STATION_NAME,SEQUENCE ";
             else if(hasName) testQueryString+=",NAME ";
 
             
@@ -75,13 +75,14 @@ namespace Utils
                     // Console.WriteLine(reader.GetString(0));
                     string wkt = reader.GetString(0);
                     string name = null;
-                    if (hasName)
+                    if (hasName||hasStationName)
                     {
                         // some data still has null string even there is name column
                         // also, this proves to be useful when we didn't select name from the table.
                         try
                         {
                             name = reader.GetString(1);
+                            name +=reader.GetInt32(2)+"号站";
                         }
                         catch (System.InvalidCastException e)
                         {
